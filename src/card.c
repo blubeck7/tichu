@@ -6,21 +6,19 @@
 typedef struct card_t {
 	int value;
 	int suit;
-	wchar_t name[CARD_NAME_SIZE];
+	char name[CARD_NAME_SIZE];
 } Card;
 
 
-Card *create_card(int value, int suit, wchar_t name[CARD_NAME_SIZE])
+Card *create_card(int value, int suit, char name[CARD_NAME_SIZE])
 {
 	Card *card;
 
 	card = malloc(sizeof(Card));
-	if (card == NULL)
-		exit(EXIT_FAILURE);
 
 	card->value = value;
 	card->suit = suit;
-	wcscpy(card->name, name);
+	strcpy(card->name, name);
 
 	return card;
 }
@@ -34,7 +32,14 @@ int destroy_card(Card *card)
 
 int print_card(Card *card)
 {
-	wprintf(L"%ls", card->name);
+	printf("%s", card->name);
+
+	return 0;
+}
+
+int print_cardf(Card *card)
+{
+	printf("%-2d %d %s", card->value, card->suit, card->name);
 
 	return 0;
 }

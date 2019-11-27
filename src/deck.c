@@ -1,28 +1,74 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <wchar.h>
-#include "../inc/card.h"
+#include "../inc/deck.h"
 
-#define MAX_DECK_SIZE 56
+#define CARD_NAME_SIZE 10
+#define DECK_SIZE 56
+
+
+typedef struct card_t {
+	int value;
+	int suit;
+	char name[CARD_NAME_SIZE];
+} Card;
 
 typedef struct deck_t {
 	int size;
-	Card *cards[MAX_DECK_SIZE];
+	Card cards[DECK_SIZE];
 } Deck;
 
 
-Deck *create_deck(void);
+Deck *create_deck(void)
 {
 	Deck *deck;
 
 	deck = malloc(sizeof(Deck));
-	if (deck == NULL)
-		exit(EXIT_FAILURE);
 
-	deck->deck_size = 0;
+	deck->size = DECK_SIZE;
+	load_deck("res/cards.txt", deck);
 
 	return deck;
+}
+
+int load_deck(char *file, Deck *deck)
+{
+	FILE *fp;
+	int ch, i, j;
+	char value[3], suit[2], name[CARD_NAME_SIZE];
+
+	fp = fopen(file, "r");
+
+	for (i = 0; i < DECK_SIZE; i++) {
+		// read in the value of the card
+		j = 0;
+		while ((ch = fgetc(fp)) != ',')
+			value[j++] = ch;
+		value[j] = '\0';
+		
+		deck->cards[i].value = atoi(value);
+
+		// read in the suit of the card
+		j = 0;
+		while ((ch = fgetc(fp)) != ',')
+			suit[j++] = ch;
+		suit[j] = '\0';
+
+		deck->cards[i].suit = atoi(suit);
+
+		// read in the name of the card
+		j = 0;
+		while ((ch = fgetc(fp)) != '\n')
+		    name[j++] = ch;
+		name[j] = '\0';
+
+		strcpy(deck->cards[i].name, name);
+
+	}
+
+	fclose(fp);
+
+	return 0;
 }
 
 int destroy_deck(Deck *deck)
@@ -32,75 +78,25 @@ int destroy_deck(Deck *deck)
 	return 0;
 }
 
-int add_card(Deck *deck, Card *card)
-{
-	if (deck->size < MAX_DECK_SIZE) {
-		cards[deck->size] = card;
-		deck->size++;
-
-		return 0;
-	}
-
-	return 1;
-}
-
-int remove_card(Deck *deck, Card *card) {
-	if (deck->size == 0)
-		return 1;
-
-	deck->size--;
-	
-	return 0;
-}
-
 int print_deck(Deck *deck)
 {
 	int i;
 
-	for (i = 0; i < deck->size; i++) {
+	for (i = 0; i < deck->size; i++)
+		printf("%s\n", deck->cards[i].name);
 
+	return 0;
+}
 
-int shuffle_deck(Deck *deck);
-
-/*
-Deck *create_deck(void);
+int print_deckf(Deck *deck)
 {
-	Queue *queue;
 	int i;
 
-	if (max_size < 1)
-		return NULL;
-
-	if ((queue = (Queue *) malloc(sizeof(Queue))) == NULL)
-		return NULL;
-
-	queue->max_size = max_size;
-	queue->size = queue->front = queue->back = 0;
-	if ((queue->items = malloc(sizeof(void *) * max_size)) == NULL)
-		return NULL;
-
-	for (i = 0; i < max_size; i++)
-		*(queue->items + i) = NULL;
-
-	return queue;
-}
-
-int destroy_deck(Deck *deck)
-{
-	free(queue->items);
-	free(queue);
+	for (i = 0; i < deck->size; i++)
+		printf("%-2d %d %s\n",
+		deck->cards[i].value,
+		deck->cards[i].suit,
+		deck->cards[i].name);
 
 	return 0;
 }
-
-int print_deck(Deck *deck);
-{
-	if (queue->size == queue->max_size)
-		return -1;
-
-	*(queue->items + queue->back) = item;
-	queue->back = (queue->back + 1) % queue->max_size;
-	queue->size++;
-
-	return 0;
-}*/
