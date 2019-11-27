@@ -1,10 +1,16 @@
 #tichu
 
-test_deck: obj/test_deck.o obj/deck.o
-	gcc -std=c99 -o bin/test_deck obj/test_deck.o obj/deck.o
+tichu: obj/tichu.o obj/deck.o
+	gcc -std=c99 -o bin/tichu obj/tichu.o obj/deck.o
 
-obj/test_deck.o: test/test_deck.c inc/deck.h
-	gcc -std=c99 -c -o obj/test_deck.o test/test_deck.c
+#test_deck: obj/test_deck.o obj/deck.o
+	#gcc -std=c99 -o bin/test_deck obj/test_deck.o obj/deck.o
+
+obj/tichu.o: src/tichu.c inc/deck.h
+	gcc -std=c99 -c -o obj/tichu.o src/tichu.c
+
+#obj/test_deck.o: test/test_deck.c inc/deck.h
+	#gcc -std=c99 -c -o obj/test_deck.o test/test_deck.c
 
 obj/deck.o: src/deck.c inc/deck.h
 	gcc -std=c99 -c -o obj/deck.o src/deck.c
@@ -25,4 +31,4 @@ obj/deck.o: src/deck.c inc/deck.h
 	#gcc -c src/deck.c -o obj/deck.o
 
 clean:
-	rm obj/*
+	rm -f obj/* bin/*

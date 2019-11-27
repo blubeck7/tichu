@@ -1,7 +1,7 @@
-#ifndef DECK_H
-#define DECK_H
+#ifndef PLAYER_H
+#define PLAYER_H
 
-typedef struct deck_t Deck;
+typedef struct player_t Player;
 
 extern Deck deck;
 
