@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../inc/deck.h"
+#include "../inc/game.h"
 
 
 int main(int argc, char *argv[])

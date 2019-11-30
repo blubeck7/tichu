@@ -1,14 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-typedef struct player_t Player;
+#include "types.h"
 
-extern Deck deck;
+int init_player(Player *player, int n);
+int print_player(Player *player), int n;
 
-//int init_deck(void);
-//int destroy_deck(Deck *deck);
-int print_deck(void);
-int print_deck_all(void);
-int shuffle_deck(void);
-
-#endif // DECK_H
+#endif // PLAYER_H

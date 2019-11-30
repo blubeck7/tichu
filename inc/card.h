@@ -1,13 +1,15 @@
 #ifndef CARD_H
 #define CARD_H
 
-#define CARD_NAME_SIZE 11
+#define CARD_NAME_SIZE 8
 
-typedef struct card_t Card;
+typedef struct card_t {
+	int value;
+	int suit;
+	char name[CARD_NAME_SIZE];
+} Card;
 
-Card *create_card(int value, int suit, char name[CARD_NAME_SIZE]);
-int destroy_card(Card *card);
 int print_card(Card *card);
-int print_cardf(Card *card);
+int print_card_all(Card *card);
 
 #endif // CARD_H

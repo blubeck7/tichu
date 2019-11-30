@@ -1,10 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 
-typedef struct game_t Game;
 
-extern Game game;
+#include "types.h"
 
-int init_game(void);
+
+int init_game(Game *game);
+int deal_eight(Game *game);
+int deal_six(Game *game);
+
 
 #endif // GAME_H

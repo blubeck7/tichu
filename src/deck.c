@@ -4,21 +4,8 @@
 #include <time.h>
 #include "../inc/deck.h"
 
-#define CARD_NAME_SIZE 10
-#define DECK_SIZE 56
 
 
-typedef struct card_t {
-	int value;
-	int suit;
-	char name[CARD_NAME_SIZE];
-} Card;
-
-typedef struct deck_t {
-	int size;
-	int order[DECK_SIZE];
-	Card cards[DECK_SIZE];
-} Deck;
 
 // Deck is initialized at compile-time.
 Deck deck =

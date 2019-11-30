@@ -57,3 +57,6 @@ pyenv/
 # Vim
 *.swp
 *.swo
+
+#VSCode
+*.vscode
