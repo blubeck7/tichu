@@ -7,6 +7,7 @@
 #define PLAYER_NAME 8
 #define NUM_PLAYERS 4
 #define MAX_HAND 14
+#define HAND_SPACE 200
 
 #define PASS 0
 #define SINGLE 1
@@ -16,39 +17,50 @@
 #define STRAIGHT 5
 #define BOMB 6
 
+#define TICHU 1
+#define GRAND 2
 
-typedef struct card_t {
+typedef struct card_t Card;
+typedef struct deck_t Deck;
+typedef struct hand_t Hand;
+typedef struct player_t Player;
+typedef struct game_t Game;
+typedef int (Strat)(Game *game, Hand *hand);
+
+struct card_t {
 	int value;
 	int suit;
 	char name[CARD_NAME_SIZE];
-} Card;
+};
 
-typedef struct deck_t {
+struct deck_t {
 	int size;
 	int order[DECK_SIZE];
 	Card cards[DECK_SIZE];
-} Deck;
+};
 
-typedef struct hand_t {
-	int type;
+struct hand_t {
+	int type; // pass, single, etc.
 	int length; // number of cards 
 	int high; // high card
 	int low; // low card
 	Card cards[MAX_HAND];
-} Hand;
+};
 
-typedef struct player_t {
+struct player_t {
         int num;
         char name[PLAYER_NAME];
         int num_cards;
+	Strat *strat;
         Card cards[MAX_HAND];
-	int (* strat)(Game *game, Hand *hand);
-} Player;
+};
 
-typedef struct game_t {
+struct game_t {
     Deck deck;
     Player players[NUM_PLAYERS];
-} Game;
+    int num_hands; // number of valids hands
+    Hand hands[HAND_SPACE];
+};
 
 
 extern Deck START_DECK;

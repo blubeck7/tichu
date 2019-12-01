@@ -1,12 +1,17 @@
 #tichu make file
 
-game: obj/game.o obj/res.o
-	gcc -Wall -std=c99 -o bin/game obj/game.o obj/res.o
+OBJECTS = obj/game.o obj/player.o obj/res.o
 
-obj/game.o: src/game.c inc/game.h
+tichu: $(OBJECTS)
+	gcc -Wall -std=c99 -o bin/tichu $(OBJECTS)
+
+obj/game.o: src/game.c inc/game.h inc/player.h inc/types.h
 	gcc -Wall -std=c99 -c -o obj/game.o src/game.c
 
-obj/res.o: src/res.c inc/game.h
+obj/player.o: src/player.c inc/game.h inc/player.h inc/types.h
+	gcc -Wall -std=c99 -c -o obj/player.o src/player.c
+
+obj/res.o: src/res.c inc/types.h
 	gcc -Wall -std=c99 -c -o obj/res.o src/res.c
 
 #tichu: obj/tichu.o obj/deck.o
