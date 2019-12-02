@@ -5,11 +5,32 @@
 #include "../inc/types.h"
 
 int init_player(Player *player, int n, char name[PLAYER_NAME], Strat *strat)
-{
+{	
+		int i;
+
         player->num = n;
         strcpy(player->name, name);
         player->num_cards = 0;
-        player->strat = strat;
+
+		for (i = 0; i < MAX_HAND; i++) {
+			player->cards[i].value = 0;
+			player->cards[i].suit = 0;
+			strcpy(player->cards[i].name, "");
+		}
+
+        player->num_captured_cards = 0;
+		for (i = 0; i < DECK_SIZE; i++) {
+			player->captured_cards[i].value = 0;
+			player->captured_cards[i].suit = 0;
+			strcpy(player->captured_cards[i].name, "");
+		}
+
+		player->has_one = 0;
+		player->has_dog = 0;
+		player->has_phoenix = 0;
+		player->has_dragon = 0;
+
+		player->strat = strat;
 
         return 0;
 }

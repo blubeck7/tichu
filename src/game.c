@@ -10,6 +10,7 @@ static int init_deck(Deck *deck);
 static int print_deck_all(Deck *deck);
 static int shuffle_deck(Deck *deck);
 static int copy_card(Card *dest, Card *src);
+static int get_singles(Game *game, Player *player);
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +19,29 @@ int main(int argc, char *argv[])
 	printf("Welcome!\n");
 	
 	init_game(&game);
-	//deal_eight(&game);
+
+	print_player(&(game.players[0]));
+	print_player(&(game.players[1]));
+	print_player(&(game.players[2]));
+	print_player(&(game.players[3]));
+
+	deal_eight(&game);
+
+	print_player(&(game.players[0]));
+	print_player(&(game.players[1]));
+	print_player(&(game.players[2]));
+	print_player(&(game.players[3]));
+
+	sort_cards(game.players[0].cards, 8);
+	sort_cards(game.players[1].cards, 8);
+	sort_cards(game.players[2].cards, 8);
+	sort_cards(game.players[3].cards, 8);
+
+	print_player(&(game.players[0]));
+	print_player(&(game.players[1]));
+	print_player(&(game.players[2]));
+	print_player(&(game.players[3]));
+
 	// printf("Press q to quit at anytime.")
 
 	return 0;
@@ -27,34 +50,32 @@ int main(int argc, char *argv[])
 
 int init_game(Game *game)
 {
+	int i, j;
+
+	/* TODO: implement with a better random generator */
+	srand((unsigned int) time(NULL));
+
+	game->is_done = 0;
+	game->match_num = 0;
+	
+	init_deck(&(game->deck));
+	shuffle_deck(&(game->deck));
+
 	init_player(&(game->players[0]), 0, "Human", NULL);
 	init_player(&(game->players[1]), 1, "Human", NULL);
 	init_player(&(game->players[2]), 2, "Human", NULL);
 	init_player(&(game->players[3]), 3, "Human", NULL);
 	
-	print_player(&(game->players[0]));
-	print_player(&(game->players[1]));
-	print_player(&(game->players[2]));
-	print_player(&(game->players[3]));	
+	game->match.num = 0; 
+	for (i = 0; i < NUM_PLAYERS; i++) {
+		game->match.player_points[i] = 0; 
 
-	init_deck(&(game->deck));
-	shuffle_deck(&(game->deck));
-	deal_eight(game);
 
-	print_player(&(game->players[0]));
-	print_player(&(game->players[1]));
-	print_player(&(game->players[2]));
-	print_player(&(game->players[3]));
-
-	sort_cards(game->players[0].cards, 8);
-	sort_cards(game->players[1].cards, 8);
-	sort_cards(game->players[2].cards, 8);
-	sort_cards(game->players[3].cards, 8);
-
-	print_player(&(game->players[0]));
-	print_player(&(game->players[1]));
-	print_player(&(game->players[2]));
-	print_player(&(game->players[3]));
+	game->num_passes = 0;
+	game->cur_round = game->cur_turn;
+	game->cur_player = rand() % NUM_PLAYERS;
+	game->has_top_hand = 0;
+	game->has_call_card = 0;
 
 	return 0;
 }
@@ -73,8 +94,37 @@ int deal_eight(Game *game) {
 	return 0;	
 }
 
+static int get_singles(Game *game, Player *player)
+{
+	/*
+	int i;
+
+	if (!game->has_top_hand) {
+		for (i = 0; player->num_cards
+		
+	*/
+	return 0;
+}
+
 int get_hands(Game *game, Player *player)
 {
+	int i;
+
+	game->num_hands = 0;
+
+	if (!game->has_top_hand) {
+		get_singles(game, player);
+		/*
+		for (i = 0; i < MAX_HAND / 2; i ++)
+			get_doubles(Game *game, Player *player, i + 1);
+		get_triples(Game *game, Player *player);
+		get_full(Game *game, Player *player);
+		for (i = 5; i <= MAX_HAND; i ++)
+			get_straight(Game *game, Player *player);
+		for (i = 4; i <= MAX_HAND; i ++)
+			get_bomb(Game *game, Player *player, i);
+		*/
+	}		
 	return 0;
 }
 
@@ -151,9 +201,6 @@ static int shuffle_deck(Deck *deck)
 
 	for (i = 0; i < DECK_SIZE; i++)
 		cards[i] = i;
-
-	/* TODO: implement with a better random generator */
-	srand((unsigned int) time(NULL));
 
 	n_rem = DECK_SIZE;
 	for (i = 0; i < DECK_SIZE; i++) {
