@@ -84,28 +84,32 @@ struct round_t {
 };
 
 struct match_t {
-	int winning_player;
-	int winning_team;
+	int num;
+	int order[NUM_PLAYERS];
 	int player_points[NUM_PLAYERS];
 	int team_points[NUM_TEAMS];
-	int num_hands; // number of valids hands
 	Round rounds[MAX_ROUNDS];
 };
 
 struct cur_state_t {
-	int num_passes;
+	int is_game_done;
+	int is_match_done;
+	int is_round_done;
+	int cur_match;
 	int cur_round;
 	int cur_turn;
 	int cur_player;
+	int num_passes;
 	int has_call_card;
 	Card called_card;
 	int has_top_hand;
+	int num_hands; // number of valids hands
 	Hand top_hand;
 	Hand cur_hands[HAND_SPACE];
+	int team_points[NUM_TEAMS];
+};
 
 struct game_t {
-	int is_done;
-	int match_num;
 	Deck deck;
 	Player players[NUM_PLAYERS];
 	Match matches[MAX_MATCHES];

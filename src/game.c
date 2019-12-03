@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
 	print_player(&(game.players[2]));
 	print_player(&(game.players[3]));
 
+	while (!game.cur_state.is_game_done) {
+
 	deal_eight(&game);
 
 	print_player(&(game.players[0]));
@@ -50,32 +52,21 @@ int main(int argc, char *argv[])
 
 int init_game(Game *game)
 {
-	int i, j;
+	int i;
 
 	/* TODO: implement with a better random generator */
 	srand((unsigned int) time(NULL));
 
-	game->is_done = 0;
-	game->match_num = 0;
-	
 	init_deck(&(game->deck));
-	shuffle_deck(&(game->deck));
 
 	init_player(&(game->players[0]), 0, "Human", NULL);
 	init_player(&(game->players[1]), 1, "Human", NULL);
 	init_player(&(game->players[2]), 2, "Human", NULL);
 	init_player(&(game->players[3]), 3, "Human", NULL);
-	
-	game->match.num = 0; 
-	for (i = 0; i < NUM_PLAYERS; i++) {
-		game->match.player_points[i] = 0; 
 
-
-	game->num_passes = 0;
-	game->cur_round = game->cur_turn;
-	game->cur_player = rand() % NUM_PLAYERS;
-	game->has_top_hand = 0;
-	game->has_call_card = 0;
+	game->cur_state.is_game_done = 0;
+	for (i = 0; i < NUM_TEAMS; i++)
+		game->cur_state.team_points[i] = 0;
 
 	return 0;
 }
@@ -108,13 +99,13 @@ static int get_singles(Game *game, Player *player)
 
 int get_hands(Game *game, Player *player)
 {
+		/*
 	int i;
 
 	game->num_hands = 0;
 
 	if (!game->has_top_hand) {
 		get_singles(game, player);
-		/*
 		for (i = 0; i < MAX_HAND / 2; i ++)
 			get_doubles(Game *game, Player *player, i + 1);
 		get_triples(Game *game, Player *player);
@@ -123,8 +114,8 @@ int get_hands(Game *game, Player *player)
 			get_straight(Game *game, Player *player);
 		for (i = 4; i <= MAX_HAND; i ++)
 			get_bomb(Game *game, Player *player, i);
-		*/
 	}		
+		*/
 	return 0;
 }
 
@@ -173,6 +164,8 @@ static int init_deck(Deck *deck)
 		deck->cards[i].suit = START_DECK.cards[i].suit;
 		strcpy(deck->cards[i].name, START_DECK.cards[i].name);
 	}
+
+	shuffle_deck(deck);
 
 	return 0;
 }
