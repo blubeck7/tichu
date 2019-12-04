@@ -10,39 +10,44 @@ static int init_deck(Deck *deck);
 static int print_deck_all(Deck *deck);
 static int shuffle_deck(Deck *deck);
 static int copy_card(Card *dest, Card *src);
-static int get_singles(Game *game, Player *player);
 
 int main(int argc, char *argv[])
 {
 	Game game;
 
-	printf("Welcome!\n");
+	printf("Welcome!\n\n");
 	
 	init_game(&game);
 
-	print_player(&(game.players[0]));
-	print_player(&(game.players[1]));
-	print_player(&(game.players[2]));
-	print_player(&(game.players[3]));
-
-	while (!game.cur_state.is_game_done) {
+	// while (!game.cur_state.is_game_done) {
 
 	deal_eight(&game);
+	deal_six(&game);
+	game.cur_state.has_top_hand = 0;
 
+	/*
 	print_player(&(game.players[0]));
 	print_player(&(game.players[1]));
 	print_player(&(game.players[2]));
 	print_player(&(game.players[3]));
+	printf("\n");
+	*/
 
-	sort_cards(game.players[0].cards, 8);
-	sort_cards(game.players[1].cards, 8);
-	sort_cards(game.players[2].cards, 8);
-	sort_cards(game.players[3].cards, 8);
+	sort_cards(game.players[0].cards, 14);
+	sort_cards(game.players[1].cards, 14);
+	sort_cards(game.players[2].cards, 14);
+	sort_cards(game.players[3].cards, 14);
 
+	update_count(&(game.players[0]));
+	update_count(&(game.players[1]));
+	update_count(&(game.players[2]));
+	update_count(&(game.players[3]));
+	
 	print_player(&(game.players[0]));
 	print_player(&(game.players[1]));
 	print_player(&(game.players[2]));
 	print_player(&(game.players[3]));
+	printf("\n");
 
 	// printf("Press q to quit at anytime.")
 
@@ -85,7 +90,21 @@ int deal_eight(Game *game) {
 	return 0;	
 }
 
-static int get_singles(Game *game, Player *player)
+int deal_six(Game *game) {
+	int i, j;
+
+	for (i = 0; i < NUM_PLAYERS; i++) {
+		for (j = 0; j < 6; j++) {
+			copy_card(&(game->players[i].cards[j + 8]),
+			&(game->deck.cards[game->deck.order[i * 6 + j + 32]]));
+		}
+		game->players[i].num_cards = 14;
+	}
+
+	return 0;	
+}
+
+int get_singles(Game *game, Player *player)
 {
 	/*
 	int i;
@@ -99,8 +118,16 @@ static int get_singles(Game *game, Player *player)
 
 int get_hands(Game *game, Player *player)
 {
-		/*
-	int i;
+	/* There are four cases:
+	 * 	1. no top hand, no phoenix.
+	 * 	2. top hand, no phoenix.
+	 * 	3. no top hand, phoenix.
+	 * 	4 top hand, phoenix.
+	 */
+
+	/*
+	if (player-
+int i;
 
 	game->num_hands = 0;
 

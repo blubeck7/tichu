@@ -11,7 +11,7 @@
 #define HAND_SPACE 260
 #define MAX_TURNS 25
 #define MAX_ROUNDS 60
-#define MAX_MATCHES 50
+#define MAX_MATCHES 2
 
 #define NONE 0
 #define PASS 0
@@ -24,6 +24,9 @@
 
 #define TICHU 1
 #define GRAND 2
+
+#define PHOENIX (-1)
+#define DRAGON 15
 
 typedef struct card_t Card;
 typedef struct deck_t Deck;
@@ -63,11 +66,9 @@ struct player_t {
         Card cards[MAX_HAND];
 	int num_captured_cards;
 	Card captured_cards[DECK_SIZE];
-	int has_one;
-	int has_dog;
-	int has_phoenix;
-	int has_dragon;
 	Strat *strat;
+	int count[17]; //count of card values: dog, phoenix, one, dragon
+	int has[17]; //card indicators.
 };
 
 struct turn_t {

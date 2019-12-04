@@ -58,7 +58,7 @@ Deck START_DECK =
 		{14, 4, "As"}, //144
 		{0, 0, "Dog"}, //0
 		{1, 0, "One"}, //10
-		{-1, 0, "Phoenix"}, //-10
-		{15, 0, "Dragon"}, //150
+		{-1, 0, "Phoenix"}, //-10 index is dragon's value plus one
+		{15, 0, "Dragon"} //150
 	}
 };

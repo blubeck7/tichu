@@ -25,10 +25,8 @@ int init_player(Player *player, int n, char name[PLAYER_NAME], Strat *strat)
 			strcpy(player->captured_cards[i].name, "");
 		}
 
-		player->has_one = 0;
-		player->has_dog = 0;
-		player->has_phoenix = 0;
-		player->has_dragon = 0;
+		for (i = 0; i < 17; i++)
+			player->count[i] = player->has[i] = 0;
 
 		player->strat = strat;
 
@@ -40,12 +38,49 @@ int print_player(Player *player)
         int i;
 
         printf("Player %d is %s.\n", player->num, player->name);
-        printf("Player %d has %d cards.\n", player->num, player->num_cards);
+        printf("\tstrategy: %p\n", player->strat);
+        printf("\tcards: %d\n", player->num_cards);
+		printf("\t");
         for (i = 0; i < player->num_cards; i++)
                 if (i < player->num_cards - 1)
                         printf("%s ", player->cards[i].name);
                 else
                         printf("%s\n", player->cards[i].name);
-                
+        printf("\tcaptured: %d\n", player->num_captured_cards);
+		if (player->num_captured_cards > 0)
+			printf("\t");
+        for (i = 0; i < player->num_captured_cards; i++)
+                if (i < player->num_captured_cards - 1)
+                        printf("%s ", player->captured_cards[i].name);
+                else
+                        printf("%s\n", player->captured_cards[i].name);
+		printf("\tcount: ");
+        for (i = 0; i < 16; i++)
+			printf("%d ", player->count[i]);
+		printf("%d\n", player->count[i]);
+		printf("\thas:   ");
+        for (i = 0; i < 16; i++)
+			printf("%d ", player->has[i]);
+		printf("%d\n", player->has[i]);
+		
         return 0;
+}
+
+int update_count(Player *player)
+{
+	int i;
+
+	// count of cards
+        for (i = 0; i < player->num_cards; i++) {
+		if (player->cards[i].value == PHOENIX) {
+			player->count[DRAGON + 1]++;
+			player->has[DRAGON + 1] = 1;
+		} else {
+			player->count[player->cards[i].value]++;
+			player->has[player->cards[i].value] = 1;
+		};
+	}
+
+	return 0;
+		
 }
