@@ -10,6 +10,7 @@ static int init_deck(Deck *deck);
 static int print_deck_all(Deck *deck);
 static int shuffle_deck(Deck *deck);
 static int copy_card(Card *dest, Card *src);
+static int print_hands(Game *game);
 
 int main(int argc, char *argv[])
 {
@@ -49,6 +50,8 @@ int main(int argc, char *argv[])
 	print_player(&(game.players[3]));
 	printf("\n");
 
+	printf("Hands player 0:\n");
+	get_hands(&game, &(game.players[0]));
 	// printf("Press q to quit at anytime.")
 
 	return 0;
@@ -106,27 +109,63 @@ int deal_six(Game *game) {
 
 int get_singles(Game *game, Player *player)
 {
-	/*
-	int i;
+	
+	int i, j, n;
 
-	if (!game->has_top_hand) {
-		for (i = 0; player->num_cards
+	for (i = 0; i < player->num_cards; i++) {
+		n = game->cur_state.num_hands++;
+		game->cur_state.cur_hands[n].type = SINGLE;
+		game->cur_state.cur_hands[n].length = 1;
+		game->cur_state.cur_hands[n].high = player->cards[i].value;
+		game->cur_state.cur_hands[n].low = player->cards[i].value;
+		for (j = 0; j < game->cur_state.cur_hands[n].length; j++)
+			copy_card(&(game->cur_state.cur_hands[n].cards[j]),
+				&(player->cards[i]));
+	}
 		
-	*/
+	return 0;
+}
+
+static int print_hands(Game *game)
+{
+	int i, j;
+	
+	printf("Current hands:\n");
+	printf("%d\n", game->cur_state.num_hands);
+	for (i = 0; i < game->cur_state.num_hands; i++) {
+		printf("type: %d, length: %d, high: %d, low: %d ",
+				game->cur_state.cur_hands[i].type,
+				game->cur_state.cur_hands[i].length,
+				game->cur_state.cur_hands[i].high,
+				game->cur_state.cur_hands[i].low);
+		printf("cards: ");
+		for (j = 0; j < game->cur_state.cur_hands[i].length; j++)
+			printf("%s ", game->cur_state.cur_hands[i].cards[j].name);
+		printf("\n");
+	}
+
 	return 0;
 }
 
 int get_hands(Game *game, Player *player)
 {
-	/* There are four cases:
+	/* Initialize the variables related to the current hands.
+	 * There are four cases to deal with:
 	 * 	1. no top hand, no phoenix.
 	 * 	2. top hand, no phoenix.
 	 * 	3. no top hand, phoenix.
 	 * 	4 top hand, phoenix.
 	 */
 
+	game->cur_state.num_hands = 0;
+
+	if (!game->cur_state.has_top_hand && !player->has[DRAGON + 1]) {
+		printf("No top hand, no phoenix\n");
+		get_singles(game, player);
+	}
+
+	print_hands(game);
 	/*
-	if (player-
 int i;
 
 	game->num_hands = 0;
