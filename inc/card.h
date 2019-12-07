@@ -1,6 +1,20 @@
 #ifndef CARD_H
 #define CARD_H
 
+#define NUM_CARDS 56
+#define NUM_VALUES 17
+#define NUM_RVALUES 13
+#define NUM_SUITS 5 
+#define NUM_RSUITS 4
+
+#define DOG 0
+#define ONE 10
+#define DRAGON 150
+#define PHOENIX 160
+
+#define get_value(card) (card / 10)
+#define get_suit(card) (card % 10)
+
 typedef int Card;
 typedef struct card_count_t Card_Count;
 
@@ -9,8 +23,10 @@ struct card_count_t {
 	int counts[NUM_VALUES];
 	int one_flags[NUM_VALUES];
 	int two_flags[NUM_VALUES];
-	Card cards[NUM_VALUES - 4][NUM_SUITS - 1];
+	Card rcards[NUM_RVALUES][NUM_RSUITS];
 };
+
+extern Card CARDS[NUM_CARDS];
 
 int print_card(Card card);
 int init_card_count(Card_Count *card_count);

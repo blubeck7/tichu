@@ -34,13 +34,13 @@
 	#gcc -std=c99 -c -o obj/test_card.o test/test_card.c
 
 tichu: obj/tichu.o obj/card.o
-	gcc -std=c99 -O3 -o bin/tichu obj/tichu.o obj/card.o
+	gcc -Wall -std=c99 -O3 -o bin/tichu obj/tichu.o obj/card.o
 
 obj/tichu.o: src/tichu.c inc/card.h
-	gcc -std=c99 -c -O3 -o obj/tichu.o src/tichu.c
+	gcc -Wall -std=c99 -c -O3 -o obj/tichu.o src/tichu.c
 
 obj/card.o: src/card.c inc/card.h
-	gcc -std=c99 -c -O3 -o obj/card.o src/card.c
+	gcc -Wall -std=c99 -c -O3 -o obj/card.o src/card.c
 
 #test_deck.o: test/test_deck.c
 	#gcc -c test/test_deck.c -o obj/test_deck.o

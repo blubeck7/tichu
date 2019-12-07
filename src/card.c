@@ -3,29 +3,14 @@
 #include <string.h>
 #include "../inc/card.h"
 
-#define NUM_CARDS 56
-#define NUM_VALUES 17
-#define NUM_RVALUES 13
-#define NUM_SUITS 5 
-#define NUM_RSUITS 4
-
-#define DOG 0
-#define ONE 10
-#define DRAGON 150
-#define PHOENIX 160
-
-#define get_value(card) (card / 10)
-#define get_suit(card) (card % 10)
-
-//extern Card CARDS[NUM_CARDS];
-
 Card CARDS[NUM_CARDS] = {
-	0, 10,
-	21, 31, 41, 51, 61, 71, 81, 91, 101, 111, 121, 131, 141,
-	22, 32, 42, 52, 62, 72, 82, 92, 102, 112, 122, 132, 142,
-	23, 33, 43, 53, 63, 73, 83, 93, 103, 113, 123, 133, 143,
-	24, 34, 44, 54, 64, 74, 84, 94, 104, 114, 124, 134, 144,
-	150, 160
+//  0	 1	  2	   3 	4    5    6    7    8    9
+	0,   10,  21,  31,  41,  51,  61,  71,  81,  91,  // 0
+	101, 111, 121, 131, 141, 22,  32,  42,  52,  62,  // 1
+	72,  82,  92,  102, 112, 122, 132, 142, 23,  33,  // 2
+	43,  53,  63,  73,  83,  93,  103, 113, 123, 133, // 3
+	143, 24,  34,  44,  54,  64,  74,  84,  94,  104, // 4
+	114, 124, 134, 144, 150, 160                      // 5
 };
 
 char *VALUE_NAMES[NUM_VALUES] = {
@@ -43,7 +28,7 @@ int print_card(Card card)
 	value = get_value(card);
 	suit = get_suit(card);
 
-	printf("%s%s", VALUE_NAMES[value], SUIT_NAMES[suit]);
+	printf("%2s%s", VALUE_NAMES[value], SUIT_NAMES[suit]);
 
 	return 0;
 };
@@ -60,34 +45,37 @@ int init_card_count(Card_Count *card_count)
 		card_count->two_flags[i] = 0;
 	}
 
-	for (i = 0; i < NUM_VALUES - 4; i++)
-		for (j = 0; j < NUM_SUITS - 1; j++)
-			card_count->cards[i][j] = 0;
+	for (i = 0; i < NUM_RVALUES; i++)
+		for (j = 0; j < NUM_RSUITS; j++)
+			card_count->rcards[i][j] = 0;
 
 	return 0;
 }
 
 int count_cards(Card cards[], int num_cards, Card_Count *card_count)
 {
-	int i;
-	int value, suit;
-	Card card;
+	int i, n, value;
 
 	card_count->num_cards = num_cards;
 
+	// store regular cards
 	for (i = 0; i < num_cards; i++) {
-		card = cards[i];
-		value = get_value(card);
-		suit = get_suit(card);
-		card_count->counts[value]++;
-		card_count->cards[value - 2][suit - 1] = card;
+		if (cards[i] > ONE && cards[i] < DRAGON) {
+			value = get_value(cards[i]);
+			n = card_count->counts[value]++;
+			card_count->rcards[value - 2][n] = cards[i];
+		} else {
+			value = get_value(cards[i]);
+			card_count->counts[value]++;
+		}
 	}
 
+	// calculate the flags
 	for (i = 0; i < num_cards; i++) {
 		if (card_count->counts[i] == 1)
 			card_count->one_flags[i] = 1;
 		else if (card_count->counts[i] == 2)
-			card_count->one_flags[i] = 1;
+			card_count->two_flags[i] = 1;
 	}
 
 	return 0;
@@ -119,22 +107,49 @@ int print_card_count(Card_Count *card_count)
 		printf("%3d ", card_count->two_flags[i]);
 	printf("%3d\n", card_count->two_flags[i]);
 
-	for (i = 0; i < NUM_RSUITS; i++) {
+	// print regular cards
+	for (i = 0; i < NUM_RSUITS - 1; i++) {
 		if (i == 0)
-			printf("Cards: ");
+			printf("Cards:         ");
 		else
-			printf("       ");
+			printf("               ");
 
-		for (j = 0; j < NUM_RVALUES; j++)
-			if (card_count->cards[i][j])
-				printf("%3s ", print_card(card_count->cards[i][j]));
-			else
+		for (j = 0; j < NUM_RVALUES - 1; j++)
+			if (card_count->counts[j + 2] > i) {
+				print_card(card_count->rcards[j][i]);
+				printf(" ");
+			} else
 				printf("    ");
-		if (card_count->cards[i][j])
-			printf("%3s\n", print_card(card_count->cards[i][j]));
-		else
-			printf("    \n");
+		if (card_count->counts[j + 2] > i) {
+			print_card(card_count->rcards[j][i]);
+			printf("\n");
+		} else
+			printf("\n");
 	}
+	if (card_count->counts[j + 2] > i)
+		print_card(card_count->rcards[j][i]);
+	else
+		printf("\n");
+
+	// print special cards
+	printf("Special: ");
+	if (card_count->counts[0] > 0) {
+		print_card(DOG);
+		printf(" ");
+	}
+	if (card_count->counts[1] > 0) {
+		print_card(ONE);
+		printf(" ");
+	}
+	if (card_count->counts[15] > 0) {
+		print_card(DRAGON);
+		printf(" ");
+	}
+	if (card_count->counts[16] > 0) {
+		print_card(PHOENIX);
+		printf(" ");
+	}
+	printf("\n");
 
 	return 0;
 }
