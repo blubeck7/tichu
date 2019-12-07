@@ -25,8 +25,8 @@
 #define TICHU 1
 #define GRAND 2
 
-#define PHOENIX (-1)
 #define DRAGON 15
+#define PHOENIX 16
 
 typedef struct card_t Card;
 typedef struct deck_t Deck;
@@ -37,6 +37,7 @@ typedef struct round_t Round;
 typedef struct game_t Game;
 typedef struct match_t Match; 
 typedef struct cur_state_t Cur_State;
+typedef struct count_t Count;
 typedef int (Strat)(Game *game, Hand *hand);
 
 struct card_t {
@@ -59,15 +60,20 @@ struct hand_t {
 	Card cards[MAX_HAND];
 };
 
+struct count_t {
+	int count;
+	Card cards[4];
+};
+
 struct player_t {
-        int num;
-        char name[PLAYER_NAME];
-        int num_cards;
-        Card cards[MAX_HAND];
+	int num;
+	char name[PLAYER_NAME];
+	int num_cards;
+	Card cards[MAX_HAND];
 	int num_captured_cards;
 	Card captured_cards[DECK_SIZE];
 	Strat *strat;
-	int count[17]; //count of card values: dog, phoenix, one, dragon
+	Count counts[17]; //count of card values: dog, phoenix, one, dragon
 	int has[17]; //card indicators.
 };
 

@@ -1,14 +1,15 @@
 #include <stdio.h>
-#include "../inc/game.h"
+#include "../inc/card.h"
 
 
 int main(int argc, char *argv[])
 {
+	Card_Count card_count;
 
 	printf("Welcome to Tichu!\n");
-	print_deck_all();
-	shuffle_deck();
-	print_deck_all();
+	init_card_count(&card_count);
+	print_card_count(&card_count);
+
 
 	return 0;
 }

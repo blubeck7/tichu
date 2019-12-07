@@ -1,21 +1,19 @@
 #tichu make file
 
-OBJECTS = obj/game.o obj/player.o obj/res.o
+#OBJECTS = obj/game.o obj/player.o obj/res.o
 
-tichu: $(OBJECTS)
-	gcc -Wall -std=c99 -o bin/tichu $(OBJECTS)
+#tichu: $(OBJECTS)
+	#gcc -Wall -std=c99 -o bin/tichu $(OBJECTS)
 
-obj/game.o: src/game.c inc/game.h inc/player.h inc/types.h
-	gcc -Wall -std=c99 -c -o obj/game.o src/game.c
+#obj/game.o: src/game.c inc/game.h inc/player.h inc/types.h
+	#gcc -Wall -std=c99 -c -o obj/game.o src/game.c
 
-obj/player.o: src/player.c inc/game.h inc/player.h inc/types.h
-	gcc -Wall -std=c99 -c -o obj/player.o src/player.c
+#obj/player.o: src/player.c inc/game.h inc/player.h inc/types.h
+	#gcc -Wall -std=c99 -c -o obj/player.o src/player.c
 
-obj/res.o: src/res.c inc/types.h
-	gcc -Wall -std=c99 -c -o obj/res.o src/res.c
+#obj/res.o: src/res.c inc/types.h
+	#gcc -Wall -std=c99 -c -o obj/res.o src/res.c
 
-#tichu: obj/tichu.o obj/deck.o
-	#gcc -std=c99 -o bin/tichu obj/tichu.o obj/deck.o
 
 #test_deck: obj/test_deck.o obj/deck.o
 	#gcc -std=c99 -o bin/test_deck obj/test_deck.o obj/deck.o
@@ -35,8 +33,14 @@ obj/res.o: src/res.c inc/types.h
 #obj/test_card.o: test/test_card.c inc/card.h
 	#gcc -std=c99 -c -o obj/test_card.o test/test_card.c
 
-#obj/card.o: src/card.c inc/card.h
-	#gcc -std=c99 -c -o obj/card.o src/card.c
+tichu: obj/tichu.o obj/card.o
+	gcc -std=c99 -O3 -o bin/tichu obj/tichu.o obj/card.o
+
+obj/tichu.o: src/tichu.c inc/card.h
+	gcc -std=c99 -c -O3 -o obj/tichu.o src/tichu.c
+
+obj/card.o: src/card.c inc/card.h
+	gcc -std=c99 -c -O3 -o obj/card.o src/card.c
 
 #test_deck.o: test/test_deck.c
 	#gcc -c test/test_deck.c -o obj/test_deck.o

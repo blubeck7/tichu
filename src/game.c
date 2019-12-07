@@ -21,18 +21,16 @@ int main(int argc, char *argv[])
 	init_game(&game);
 
 	// while (!game.cur_state.is_game_done) {
-
+/*
 	deal_eight(&game);
 	deal_six(&game);
 	game.cur_state.has_top_hand = 0;
 
-	/*
 	print_player(&(game.players[0]));
 	print_player(&(game.players[1]));
 	print_player(&(game.players[2]));
 	print_player(&(game.players[3]));
 	printf("\n");
-	*/
 
 	sort_cards(game.players[0].cards, 14);
 	sort_cards(game.players[1].cards, 14);
@@ -52,6 +50,7 @@ int main(int argc, char *argv[])
 
 	printf("Hands player 0:\n");
 	get_hands(&game, &(game.players[0]));
+	*/
 	// printf("Press q to quit at anytime.")
 
 	return 0;
@@ -147,6 +146,36 @@ static int print_hands(Game *game)
 	return 0;
 }
 
+int get_doubles_no(Game *game, Player *player)
+{
+	/* No phoenix version */
+	/*
+	int i, j, n;
+
+	for (i = 2; i <= 14; j++) {
+		if (player->count[i] == 2) {
+			n = game->cur_state.num_hands++;
+			game->cur_state.cur_hands[n].type = DOUBLE;
+			game->cur_state.cur_hands[n].length = 2;
+			game->cur_state.cur_hands[n].high = player->cards[i].value;
+			game->cur_state.cur_hands[n].low = player->cards[i].value;
+			for (j = 0; j < game->cur_state.cur_hands[n].length; j++)
+				copy_card(&(game->cur_state.cur_hands[n].cards[j]),
+				&(player->cards[i]));
+			;// 2 cards
+		} else if (player->count[i] == 3) {
+			;// 3 cards
+		} else if (player->count[i] == 4) {
+			;// 4 cards
+		}
+
+	}
+	*/
+
+	return 0;
+}
+	
+
 int get_hands(Game *game, Player *player)
 {
 	/* Initialize the variables related to the current hands.
@@ -162,6 +191,7 @@ int get_hands(Game *game, Player *player)
 	if (!game->cur_state.has_top_hand && !player->has[DRAGON + 1]) {
 		printf("No top hand, no phoenix\n");
 		get_singles(game, player);
+		get_doubles_no(game, player);
 	}
 
 	print_hands(game);
