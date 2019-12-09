@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include "../inc/card.h"
-
+#include "../inc/hand.h"
 
 int main(int argc, char *argv[])
 {
 	Card cards[14];
 	Card_Count card_count;
+	Hand_Space hand_space;
 
 	printf("Welcome to Tichu!\n");
 	init_card_count(&card_count);
@@ -24,9 +25,12 @@ int main(int argc, char *argv[])
 	cards[10] = CARDS[49]; //10s
 	cards[11] = CARDS[50]; //Js
 	cards[12] = CARDS[53]; //As
-	cards[13] = CARDS[55]; //Phoenix
+	cards[13] = CARDS[54]; //Dragon
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
+
+	//Testing the code to generate hands
+	gen_hands(&card_count, &hand_space, NULL);
 
 	return 0;
 }
