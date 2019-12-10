@@ -24,6 +24,10 @@ struct card_count_t {
 	int one_flags[NUM_VALUES];
 	int two_flags[NUM_VALUES];
 	Card rcards[NUM_RVALUES][NUM_RSUITS];
+	int counts_d[NUM_RVALUES];
+	Card doubles[NUM_RVALUES][6][2];
+	int counts_t[NUM_RVALUES];
+	Card triples[NUM_RVALUES][4][3];
 };
 
 extern Card CARDS[NUM_CARDS];
