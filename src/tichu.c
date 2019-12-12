@@ -11,18 +11,21 @@ int main(int argc, char *argv[])
 	// Random testing of card counts
 	Card cards[14];
 	Card_Count card_count;
-	//Hand_Space hand_space;
+	Hand_Space hand_space;
+
+	printf("Welcome to Tichu!\n");
 
 	srand((unsigned) time(NULL));
 	rand_hand(cards);
 	sort_cards(cards, 14);
 
-	printf("Welcome to Tichu!\n");
 	init_card_count(&card_count);
-	//print_card_count(&card_count);
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
 
+	//Testing the code to generate hands
+	gen_hands(&card_count, &hand_space, NULL);
+	print_hands(&hand_space);
 	/*
 	cards[0] = CARDS[0]; //Dog 
 	cards[1] = CARDS[6]; //6c
@@ -47,8 +50,6 @@ int main(int argc, char *argv[])
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
 	*/
-	//Testing the code to generate hands
-	//gen_hands(&card_count, &hand_space, NULL);
 
 	return 0;
 }

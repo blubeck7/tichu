@@ -20,14 +20,14 @@ typedef struct card_count_t Card_Count;
 
 struct card_count_t {
 	int num_cards;
-	int counts[NUM_VALUES];
 	int one_flags[NUM_VALUES];
 	int two_flags[NUM_VALUES];
-	Card rcards[NUM_RVALUES][NUM_RSUITS];
-	int counts_d[NUM_RVALUES];
-	Card doubles[NUM_RVALUES][6][2];
-	int counts_t[NUM_RVALUES];
-	Card triples[NUM_RVALUES][4][3];
+	int counts_s[NUM_VALUES];
+	Card singles[NUM_VALUES][4];
+	int counts_d[NUM_VALUES];
+	Card doubles[NUM_VALUES][6][2];
+	int counts_t[NUM_VALUES];
+	Card triples[NUM_VALUES][4][3];
 };
 
 extern Card CARDS[NUM_CARDS];

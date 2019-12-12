@@ -33,7 +33,7 @@ int print_card(Card card)
 	value = get_value(card);
 	suit = get_suit(card);
 
-	printf("%2s%s", VALUE_NAMES[value], SUIT_NAMES[suit]);
+	printf("%s%s", VALUE_NAMES[value], SUIT_NAMES[suit]);
 
 	return 0;
 };
@@ -45,30 +45,34 @@ int init_card_count(Card_Count *card_count)
 	card_count->num_cards = 0;
 
 	for (i = 0; i < NUM_VALUES; i++) {
-		card_count->counts[i] = 0;
 		card_count->one_flags[i] = 0;
 		card_count->two_flags[i] = 0;
 	}
 
 	// singles
-	for (i = 0; i < NUM_RVALUES; i++)
-		for (j = 0; j < NUM_RSUITS; j++)
-			card_count->rcards[i][j] = 0;
+	for (i = 0; i < NUM_VALUES; i++) {
+		card_count->counts_s[i] = 0;
+		for (j = 0; j < 4; j++)
+			card_count->singles[i][j] = 0;
+	}
 
 	// doubles
-	for (i = 0; i < NUM_RVALUES; i++) {
+	for (i = 0; i < NUM_VALUES; i++) {
 		card_count->counts_d[i] = 0;
-		for (j = 0; j < 6; j++)
-			card_count->doubles[i][j][0] = card_count->doubles[i][j][1] = 0;
+		for (j = 0; j < 6; j++) {
+			card_count->doubles[i][j][0] = 0;
+			card_count->doubles[i][j][1] = 0;
+		}
 	}
 
 	// triples
-	for (i = 0; i < NUM_RVALUES; i++) {
+	for (i = 0; i < NUM_VALUES; i++) {
 		card_count->counts_t[i] = 0;
-		for (j = 0; j < 4; j++)
+		for (j = 0; j < 4; j++) {
 			card_count->triples[i][j][0] = 0;
 			card_count->triples[i][j][1] = 0;
 			card_count->triples[i][j][2] = 0;
+		}
 	}
 
 	return 0;
@@ -77,39 +81,36 @@ int init_card_count(Card_Count *card_count)
 int count_cards(Card cards[], int num_cards, Card_Count *card_count)
 {
 	int i, n, value;
+	Card card;
 
 	card_count->num_cards = num_cards;
 
-	// store regular cards
+	// singles
 	for (i = 0; i < num_cards; i++) {
-		if (cards[i] > ONE && cards[i] < DRAGON) {
-			value = get_value(cards[i]);
-			n = card_count->counts[value]++;
-			card_count->rcards[value - 2][n] = cards[i];
-		} else {
-			value = get_value(cards[i]);
-			card_count->counts[value]++;
-		}
+		card = cards[i];
+		value = get_value(card);
+		n = card_count->counts_s[value]++;
+		card_count->singles[value][n] = card;
 	}
 
-	// calculate the flags
+	// flags
 	for (i = 0; i < NUM_VALUES; i++) {
-		if (card_count->counts[i] >= 2) {
+		if (card_count->counts_s[i] >= 2) {
 			card_count->one_flags[i] = 1;
 			card_count->two_flags[i] = 1;
-		} else if (card_count->counts[i] >= 1)
+		} else if (card_count->counts_s[i] >= 1)
 			card_count->one_flags[i] = 1;
 	}
 
-	// count doubles
-	for (i = 0; i < NUM_RVALUES; i++)
-		if ((n = card_count->counts[i + 2]) >= 2)
-			make_doubles(card_count, i + 2, n);
+	// doubles
+	for (i = 0; i < NUM_VALUES; i++)
+		if ((n = card_count->counts_s[i]) >= 2)
+			make_doubles(card_count, i, n);
 
-	// count triples
-	for (i = 0; i < NUM_RVALUES; i++)
-		if ((n = card_count->counts[i + 2]) >= 3)
-			make_triples(card_count, i + 2, n);
+	// triples
+	for (i = 0; i < NUM_VALUES; i++)
+		if ((n = card_count->counts_s[i]) >= 3)
+			make_triples(card_count, i, n);
 
 	return 0;
 }
@@ -120,14 +121,14 @@ int make_doubles(Card_Count *card_count, int value, int num_cards)
 	Card *cards;
 
 	num_doubles = num_cards * (num_cards - 1) / 2;
-	card_count->counts_d[value - 2] = num_doubles;
+	card_count->counts_d[value] = num_doubles;
 
-	cards = card_count->rcards[value - 2];
+	cards = card_count->singles[value];
 	k = 0;
 	for (i = 0; i < num_cards; i++) {
 		for (j = i + 1; j < num_cards; j++) {
-			card_count->doubles[value - 2][k][0] = cards[i];
-			card_count->doubles[value - 2][k][1] = cards[j];
+			card_count->doubles[value][k][0] = cards[i];
+			card_count->doubles[value][k][1] = cards[j];
 			k++;
 		}
 	}
@@ -139,32 +140,35 @@ int make_triples(Card_Count *card_count, int value, int num_cards)
 {
 	switch (num_cards) {
 	case 3:
-		card_count->counts_t[value - 2] = 1;
+		card_count->counts_t[value] = 1;
 
-		card_count->triples[value-2][0][0] = card_count->rcards[value-2][0];
-		card_count->triples[value-2][0][1] = card_count->rcards[value-2][1];
-		card_count->triples[value-2][0][2] = card_count->rcards[value-2][2];
+		card_count->triples[value][0][0] = card_count->singles[value][0];
+		card_count->triples[value][0][1] = card_count->singles[value][1];
+		card_count->triples[value][0][2] = card_count->singles[value][2];
+
 		break;
+
 	case 4:
-		card_count->counts_t[value-2] = 4;
+		card_count->counts_t[value] = 4;
 
-		card_count->triples[value-2][0][0] = card_count->rcards[value-2][0];
-		card_count->triples[value-2][0][1] = card_count->rcards[value-2][1];
-		card_count->triples[value-2][0][2] = card_count->rcards[value-2][2];
+		card_count->triples[value][0][0] = card_count->singles[value][0];
+		card_count->triples[value][0][1] = card_count->singles[value][1];
+		card_count->triples[value][0][2] = card_count->singles[value][2];
 
-		card_count->triples[value-2][1][0] = card_count->rcards[value-2][0];
-		card_count->triples[value-2][1][1] = card_count->rcards[value-2][1];
-		card_count->triples[value-2][1][2] = card_count->rcards[value-2][3];
+		card_count->triples[value][1][0] = card_count->singles[value][0];
+		card_count->triples[value][1][1] = card_count->singles[value][1];
+		card_count->triples[value][1][2] = card_count->singles[value][3];
 
-		card_count->triples[value-2][2][0] = card_count->rcards[value-2][0];
-		card_count->triples[value-2][2][1] = card_count->rcards[value-2][2];
-		card_count->triples[value-2][2][2] = card_count->rcards[value-2][3];
+		card_count->triples[value][2][0] = card_count->singles[value][0];
+		card_count->triples[value][2][1] = card_count->singles[value][2];
+		card_count->triples[value][2][2] = card_count->singles[value][3];
 
-		card_count->triples[value-2][3][0] = card_count->rcards[value-2][1];
-		card_count->triples[value-2][3][1] = card_count->rcards[value-2][2];
-		card_count->triples[value-2][3][2] = card_count->rcards[value-2][3];
+		card_count->triples[value][3][0] = card_count->singles[value][1];
+		card_count->triples[value][3][1] = card_count->singles[value][2];
+		card_count->triples[value][3][2] = card_count->singles[value][3];
 
 		break;
+
 	default:
 		break;
 	}
@@ -185,8 +189,8 @@ int print_card_count(Card_Count *card_count)
 
 	printf("Count: ");
 	for (i = 0; i < NUM_VALUES - 1; i++)
-		printf("%3d ", card_count->counts[i]);
-	printf("%3d\n", card_count->counts[i]);
+		printf("%3d ", card_count->counts_s[i]);
+	printf("%3d\n", card_count->counts_s[i]);
 
 	printf("OneFl: ");
 	for (i = 0; i < NUM_VALUES - 1; i++)
@@ -198,64 +202,20 @@ int print_card_count(Card_Count *card_count)
 		printf("%3d ", card_count->two_flags[i]);
 	printf("%3d\n", card_count->two_flags[i]);
 
-	// print regular cards
-	for (i = 0; i < NUM_RSUITS - 1; i++) {
-		if (i == 0)
-			printf("Cards:         ");
-		else
-			printf("               ");
-
-		for (j = 0; j < NUM_RVALUES - 1; j++)
-			if (card_count->counts[j + 2] > i) {
-				print_card(card_count->rcards[j][i]);
-				printf(" ");
-			} else
-				printf("    ");
-		if (card_count->counts[j + 2] > i) {
-			print_card(card_count->rcards[j][i]);
-			printf("\n");
-		} else
-			printf("\n");
-	}
-	printf("               ");
-	for (j = 0; j < NUM_RVALUES - 1; j++)
-		if (card_count->counts[j + 2] > i) {
-			print_card(card_count->rcards[j][i]);
+	// print singles 
+	printf("Cards: ");
+	for (i = 0; i < NUM_VALUES; i++)
+		for (j = 0; j < card_count->counts_s[i]; j++) {
+			print_card(card_count->singles[i][j]);
 			printf(" ");
-		} else
-			printf("    ");
-	if (card_count->counts[j + 2] > i) {
-		print_card(card_count->rcards[j][i]);
-		printf("\n");
-	} else
-		printf("\n");
-	
-
-	// print special cards
-	printf("Special: ");
-	if (card_count->counts[0] > 0) {
-		print_card(DOG);
-		printf(" ");
-	}
-	if (card_count->counts[1] > 0) {
-		print_card(ONE);
-		printf(" ");
-	}
-	if (card_count->counts[15] > 0) {
-		print_card(DRAGON);
-		printf(" ");
-	}
-	if (card_count->counts[16] > 0) {
-		print_card(PHOENIX);
-		printf(" ");
-	}
+		}
 	printf("\n");
 
 	// print doubles
 	printf("Doubles:\n");
-	for (i = 0; i < NUM_RVALUES; i++) {
+	for (i = 0; i < NUM_VALUES; i++) {
 		if (card_count->counts_d[i] > 0) {
-			printf("\t%2s(%d): ", VALUE_NAMES[i + 2], card_count->counts_d[i]);
+			printf("\t%2s(%d): ", VALUE_NAMES[i], card_count->counts_d[i]);
 			for (j = 0; j < card_count->counts_d[i]; j++) {
 				print_card(card_count->doubles[i][j][0]);
 				print_card(card_count->doubles[i][j][1]);
@@ -267,9 +227,9 @@ int print_card_count(Card_Count *card_count)
 
 	// print triples
 	printf("Triples:\n");
-	for (i = 0; i < NUM_RVALUES; i++) {
+	for (i = 0; i < NUM_VALUES; i++) {
 		if (card_count->counts_t[i] > 0) {
-			printf("\t%2s(%d): ", VALUE_NAMES[i + 2], card_count->counts_t[i]);
+			printf("\t%2s(%d): ", VALUE_NAMES[i], card_count->counts_t[i]);
 			for (j = 0; j < card_count->counts_t[i]; j++) {
 				print_card(card_count->triples[i][j][0]);
 				print_card(card_count->triples[i][j][1]);

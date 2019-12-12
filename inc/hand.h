@@ -6,7 +6,7 @@
 #define NONE 0
 #define PASS 0
 #define SINGLE 1
-#define PAIR 2
+#define DOUBLE 2
 #define TRIPLE 3
 #define FULL 4
 #define STRAIGHT 5
@@ -27,10 +27,12 @@ struct hand_t {
 
 struct hand_space_t {
     int num_hands;
-    Hand hands[260];
+    Hand hands[270];
 };
 
 int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand);
+int print_hands(Hand_Space *hand_space);
+int print_hand(Hand *hand);
 
 
 #endif // HAND_H
