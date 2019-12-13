@@ -26,7 +26,26 @@ int main(int argc, char *argv[])
 	//Testing the code to generate hands
 	gen_hands(&card_count, &hand_space, NULL);
 	print_hands(&hand_space);
-	/*
+
+	/*int nums[] = {1,2,4,1,2,3};*/
+	/*int n, m;*/
+	/*int *seqs;*/
+	/*int i, j;*/
+
+	/*n = (int) sizeof(nums) / sizeof(int);*/
+	/*m = 1;*/
+	/*for (i = 0; i < n; i++)*/
+		/*m *= nums[i];*/
+	/*seqs = malloc(sizeof(int) * m);*/
+	/*make_seqs((int) sizeof(nums) / sizeof(int), nums, seqs); */
+
+	/*for (i = 0; i < m; i++) {*/
+		/*printf("%d: ", i);*/
+		/*for(j = 0; j < n; j++)*/
+			/*printf("%d", *(seqs + i*n + j));*/
+		/*printf("\n");*/
+	/*}*/
+/*	
 	cards[0] = CARDS[0]; //Dog 
 	cards[1] = CARDS[6]; //6c
 	cards[2] = CARDS[9]; //7c

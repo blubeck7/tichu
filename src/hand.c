@@ -5,13 +5,11 @@
 #include "../inc/hand.h"
 
 
-Card doubles[NUM_RVALUES][6][2];
-
 int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space);
-int add_quad(Card_Count *card_count, int p, int c, Hand_Space *hand_space);
-int add_triples(Card_Count *card_count, int p, int c, Hand_Space *hand_space);
-int add_doubles(Card_Count *card_count, int p, int c, Hand_Space *hand_space);
-int add_singles(Card_Count *card_count, int p, int c, Hand_Space *hand_space);
+int add_quad(Card_Count *card_count, int val, Hand_Space *hand_space);
+int add_triples(Card_Count *card_count, int val, Hand_Space *hand_space);
+int add_doubles(Card_Count *card_count, int val, Hand_Space *hand_space);
+int add_singles(Card_Count *card_count, int val, Hand_Space *hand_space);
 
 
 int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand)
@@ -48,22 +46,22 @@ int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space)
         count = card_count->counts_s[i];
         switch (count) {
         case 4:
-            add_quad(card_count, i, count, hand_space);
-            add_triples(card_count, i, count, hand_space);
-            add_doubles(card_count, i, count, hand_space);
-            add_singles(card_count, i, count, hand_space);
+            add_quad(card_count, i, hand_space);
+            add_triples(card_count, i, hand_space);
+            add_doubles(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
 			break;
         case 3:
-            add_triples(card_count, i, count, hand_space);
-            add_doubles(card_count, i, count, hand_space);
-            add_singles(card_count, i, count, hand_space);
+            add_triples(card_count, i, hand_space);
+            add_doubles(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
             break;
         case 2:
-            add_doubles(card_count, i, count, hand_space);
-            add_singles(card_count, i, count, hand_space);
+            add_doubles(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
             break;
 		default:
-            add_singles(card_count, i, count, hand_space);
+            add_singles(card_count, i, hand_space);
             break;
         }    
     }
@@ -71,17 +69,17 @@ int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space)
     return 0;
 }
 
-int add_singles(Card_Count *card_count, int p, int c, Hand_Space *hand_space)
+int add_singles(Card_Count *card_count, int val, Hand_Space *hand_space)
 {
 	int i, j, value;
 	Card card;
 
-	for (i = 0; i < c; i++) {
+	for (i = 0; i < card_count->counts_s[val]; i++) {
 		j = hand_space->num_hands++;
 		hand_space->hands[j].type = SINGLE;
 		hand_space->hands[j].length = 1;
-		card = card_count->singles[p][i];
-		value = get_value(card_count->singles[p][i]);
+		card = card_count->singles[val][i];
+		value = get_value(card_count->singles[val][i]);
 		hand_space->hands[j].high = value;
 		hand_space->hands[j].low = value;
 		hand_space->hands[j].cards[0] = card;
@@ -90,55 +88,56 @@ int add_singles(Card_Count *card_count, int p, int c, Hand_Space *hand_space)
     return 0;
 }   
 
-int add_doubles(Card_Count *card_count, int p, int c, Hand_Space *hand_space)
+int add_doubles(Card_Count *card_count, int val, Hand_Space *hand_space)
 {
-	int i, j;
+	int i, j, value;
 
-	for (i = 0; i < c; i++) {
+	for (i = 0; i < card_count->counts_d[val]; i++) {
 		j = hand_space->num_hands++;
 		hand_space->hands[j].type = DOUBLE;
 		hand_space->hands[j].length = 2;
-		hand_space->hands[j].high = card_count->doubles[p][i][0];
-		hand_space->hands[j].low = card_count->doubles[p][i][0];
-		hand_space->hands[j].cards[0] = card_count->doubles[p][i][0];
-		hand_space->hands[j].cards[1] = card_count->doubles[p][i][1];
+		value = get_value(card_count->doubles[val][i][0]);
+		hand_space->hands[j].high = value;
+		hand_space->hands[j].low = value;
+		hand_space->hands[j].cards[0] = card_count->doubles[val][i][0];
+		hand_space->hands[j].cards[1] = card_count->doubles[val][i][1];
 	}
 
     return 0;
 }   
 
-int add_triples(Card_Count *card_count, int p, int c, Hand_Space *hand_space)
+int add_triples(Card_Count *card_count, int val, Hand_Space *hand_space)
 {
-	int i, j;
+	int i, j, value;
 
-	for (i = 0; i < c; i++) {
+	for (i = 0; i < card_count->counts_t[val]; i++) {
 		j = hand_space->num_hands++;
 		hand_space->hands[j].type = TRIPLE;
 		hand_space->hands[j].length = 3;
-		hand_space->hands[j].high = card_count->triples[p][i][0];
-		hand_space->hands[j].low = card_count->triples[p][i][0];
-		hand_space->hands[j].cards[0] = card_count->triples[p][i][0];
-		hand_space->hands[j].cards[1] = card_count->triples[p][i][1];
-		hand_space->hands[j].cards[2] = card_count->triples[p][i][2];
+		value = get_value(card_count->triples[val][i][0]);
+		hand_space->hands[j].high = value;
+		hand_space->hands[j].low = value;
+		hand_space->hands[j].cards[0] = card_count->triples[val][i][0];
+		hand_space->hands[j].cards[1] = card_count->triples[val][i][1];
+		hand_space->hands[j].cards[2] = card_count->triples[val][i][2];
 	}
 
     return 0;
 }   
 
-int add_quad(Card_Count *card_count, int p, int c, Hand_Space *hand_space)
+int add_quad(Card_Count *card_count, int val, Hand_Space *hand_space)
 {
-    /* Create the quad bomb and then add it to the hand space */
 	int i;
 
 	i = hand_space->num_hands++;
 	hand_space->hands[i].type = BOMB;
 	hand_space->hands[i].length = 4;
-	hand_space->hands[i].high = card_count->singles[p][0];
-	hand_space->hands[i].low = card_count->singles[p][0];
-	hand_space->hands[i].cards[0] = card_count->singles[p][0];
-	hand_space->hands[i].cards[1] = card_count->singles[p][1];
-	hand_space->hands[i].cards[2] = card_count->singles[p][2];
-	hand_space->hands[i].cards[3] = card_count->singles[p][3];
+	hand_space->hands[i].high = card_count->singles[val][0];
+	hand_space->hands[i].low = card_count->singles[val][0];
+	hand_space->hands[i].cards[0] = card_count->singles[val][0];
+	hand_space->hands[i].cards[1] = card_count->singles[val][1];
+	hand_space->hands[i].cards[2] = card_count->singles[val][2];
+	hand_space->hands[i].cards[3] = card_count->singles[val][3];
 
     return 0;
 }   
@@ -190,6 +189,49 @@ int print_hand(Hand *hand)
 		print_card(hand->cards[i]);
 
 	printf("\n");
+
+	return 0;
+}
+
+int make_seqs(int len, int *nums, int *seqs)
+{
+	int i, j, k, n, m;
+	int num_elems, num_reps, num_cycs, num_seqs;
+
+	if (len < 1) {
+		seqs = NULL;
+		return 0;
+	}
+//printf("len=%d\n", len);
+
+	num_seqs = *nums;
+	for (i = 1; i < len; i++)
+		num_seqs *= *(nums + i);
+
+	num_elems = *nums;
+	num_cycs = 1;
+	num_reps = num_seqs / num_elems;
+	for (n = 0; n < len; n++) {
+		if (n > 0) {
+			num_cycs *= num_elems; 
+			num_elems = *(nums + n);
+			num_reps = num_reps / num_elems;
+		}
+//printf("n=%d\n", n);
+//printf("num_cyc=%d, num_elem=%d, num_rep=%d\n\n",
+//num_cycs, num_elems, num_reps);
+
+		m = 0;
+		for (i = 0; i < num_cycs; i++) {
+			for (j = 0; j < num_elems; j++) {
+				for (k = 0; k < num_reps; k++) {
+					*(seqs + m*len + n) = j;
+//printf("m=%d, n=%d, cyc=%d, elem=%d, rep=%d\n", m, n, i, j, k);
+					m++;
+				}
+			}
+		}
+	}	
 
 	return 0;
 }

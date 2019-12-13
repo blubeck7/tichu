@@ -33,6 +33,7 @@ struct hand_space_t {
 int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand);
 int print_hands(Hand_Space *hand_space);
 int print_hand(Hand *hand);
+int make_seqs(int len, int *nums, int *seqs);
 
 
 #endif // HAND_H
