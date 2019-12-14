@@ -10,6 +10,8 @@ int add_quad(Card_Count *card_count, int val, Hand_Space *hand_space);
 int add_triples(Card_Count *card_count, int val, Hand_Space *hand_space);
 int add_doubles(Card_Count *card_count, int val, Hand_Space *hand_space);
 int add_singles(Card_Count *card_count, int val, Hand_Space *hand_space);
+int add_straights(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space);
 
 
 int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand)
@@ -40,7 +42,7 @@ int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand)
 
 int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space)
 {
-    int i, count;
+    int i, j, k, sum, count;
 
     for (i = 0; i < NUM_VALUES; i++) {
         count = card_count->counts_s[i];
@@ -63,8 +65,62 @@ int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space)
 		default:
             add_singles(card_count, i, hand_space);
             break;
-        }    
+        }
     }
+
+    // straights and straight flushes
+    for (i = 5; i < card_count->num_cards; i++) {
+        for (j = 1; j < 15 - i + 1; j++) {
+            sum = 0;
+            for (k = 0; k < i; k++) {
+                sum += card_count->one_flags[j + k];
+            }
+            if (sum == i) {
+                add_straights(card_count, j, i, hand_space);
+            }
+        }
+    }
+
+    return 0;
+}
+
+int add_straights(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space)
+{
+    int i, j, k, n;
+    int nums[MAX_HAND];
+    int *strs, num_strs;
+
+    num_strs = 1;
+    for (i = 0; i < len; i++) {
+        nums[i] = card_count->counts_s[i + val];
+        num_strs *= nums[i];
+    }
+
+	//printf("num_strs=%d\n", num_strs);
+    strs = malloc(sizeof(int) * len * num_strs);
+	make_seqs(len, nums, strs);
+    
+    // add the straights to the hand space
+	//printf("Number of Strings: %d\n", num_strs);
+	//printf("Length: %d\n", len);
+	
+    for (i = 0; i < num_strs; i++) {
+        n = hand_space->num_hands++;
+        hand_space->hands[n].type = STRAIGHT;
+        hand_space->hands[n].length = len;
+        hand_space->hands[n].high = val + len - 1;                        hand_space->hands[n].low = val;
+		//printf("Seq: %d ",i);
+    	for (j = 0; j < len; j++) {
+    		k = *(strs + i * len + j);
+			//printf("%d", k);
+    		hand_space->hands[n].cards[j] = card_count->singles[j + val][k];
+		}
+		//printf("\n");
+    }
+	
+
+	free(strs);
 
     return 0;
 }
