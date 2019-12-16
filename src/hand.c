@@ -12,6 +12,8 @@ int add_doubles(Card_Count *card_count, int val, Hand_Space *hand_space);
 int add_singles(Card_Count *card_count, int val, Hand_Space *hand_space);
 int add_straights(Card_Count *card_count, int val, int len,
     Hand_Space *hand_space);
+int add_dstraights(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space);
 
 
 int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand)
@@ -69,7 +71,7 @@ int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space)
     }
 
     // straights and straight flushes
-    for (i = 5; i < card_count->num_cards; i++) {
+    for (i = 5; i < card_count->num_cards + 1; i++) {
         for (j = 1; j < 15 - i + 1; j++) {
             sum = 0;
             for (k = 0; k < i; k++) {
@@ -81,13 +83,69 @@ int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space)
         }
     }
 
+	// double straights
+	for (i = 2; i < (card_count->num_cards / 2) + 1; i++) { //len
+		for (j = 2; j < 15 - i + 1; j++) { //low val
+            sum = 0;
+            for (k = 0; k < i; k++) {
+                sum += card_count->two_flags[j + k];
+            }
+            if (sum == i) {
+                add_dstraights(card_count, j, i, hand_space);
+            }
+        }		
+	}
+
+	// full houses
+	for (i = 0; i < NUM_VALUES; i++) {
+		for (j = 0; j < NUM_VALUES; j++) {
+			if (i != j && card_count->counts_t[i] > 0 &&
+			card_count->counts_d[j] > 0)
+		}
+	}
+
     return 0;
+}
+
+int add_dstraights(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space)
+{
+	int i, j, k, n;
+    int nums[MAX_HAND];
+    int *strs, num_strs;
+
+    num_strs = 1;
+    for (i = 0; i < len; i++) {
+        nums[i] = card_count->counts_d[i + val];
+        num_strs *= nums[i];
+    }
+
+    strs = malloc(sizeof(int) * len * num_strs);
+	make_seqs(len, nums, strs);
+
+    for (i = 0; i < num_strs; i++) {
+        n = hand_space->num_hands++;
+		hand_space->hands[n].type = DSTRAIGHT;     
+        hand_space->hands[n].length = len * 2; 
+        hand_space->hands[n].high = val + len - 1;                        hand_space->hands[n].low = val;
+		//printf("Seq: %d ",i);
+    	for (j = 0; j < len; j++) {
+    		k = *(strs + i * len + j);
+			//printf("%d", k);
+    		hand_space->hands[n].cards[2*j] =
+				card_count->doubles[j+val][k][0];
+			hand_space->hands[n].cards[2*j+1] =
+				card_count->doubles[j+val][k][1];
+		}
+	}
+
+	return 0;	
 }
 
 int add_straights(Card_Count *card_count, int val, int len,
     Hand_Space *hand_space)
 {
-    int i, j, k, n;
+    int i, j, k, n, flush;
     int nums[MAX_HAND];
     int *strs, num_strs;
 
@@ -107,7 +165,6 @@ int add_straights(Card_Count *card_count, int val, int len,
 	
     for (i = 0; i < num_strs; i++) {
         n = hand_space->num_hands++;
-        hand_space->hands[n].type = STRAIGHT;
         hand_space->hands[n].length = len;
         hand_space->hands[n].high = val + len - 1;                        hand_space->hands[n].low = val;
 		//printf("Seq: %d ",i);
@@ -115,10 +172,23 @@ int add_straights(Card_Count *card_count, int val, int len,
     		k = *(strs + i * len + j);
 			//printf("%d", k);
     		hand_space->hands[n].cards[j] = card_count->singles[j + val][k];
+
 		}
+
+		flush = 1;
+		for (j = 1; j < len; j++) {
+			if (get_suit(hand_space->hands[n].cards[j]) !=
+				get_suit(hand_space->hands[n].cards[j - 1])) {
+				flush = 0;
+				break;
+			}
+		}
+		if (!flush)
+			hand_space->hands[n].type = STRAIGHT;
+		else
+			hand_space->hands[n].type = BOMB;
 		//printf("\n");
     }
-	
 
 	free(strs);
 
@@ -233,12 +303,16 @@ int print_hand(Hand *hand)
 	case STRAIGHT:
 		printf("straight ");
 		break;
+	case DSTRAIGHT:
+		printf("dstraight ");
+		break;
 	case BOMB:
 		printf("bomb ");
 		break;
 	default:
 		break;
 	}
+
 	printf("len=%d high=%d low=%d ", hand->length, hand->high, hand->low);
 
 	for (i = 0; i < hand->length; i++)

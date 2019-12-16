@@ -10,7 +10,8 @@
 #define TRIPLE 3
 #define FULL 4
 #define STRAIGHT 5
-#define BOMB 6
+#define DSTRAIGHT 6
+#define BOMB 7
 
 #define MAX_HAND 14
 
