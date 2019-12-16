@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
 	Card cards[14];
 	Card_Count card_count;
 	Hand_Space hand_space;
+	Hand lead_hand;
+	int i;
 
 	printf("Welcome to Tichu!\n");
 
@@ -23,52 +25,131 @@ int main(int argc, char *argv[])
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
 
-	//Testing the code to generate hands
+	init_hand_space(&hand_space);
+	// Testing the code to generate hands
+	// Case 1: no lead hand, no phoenix
 	gen_hands(&card_count, &hand_space, NULL);
+	printf("No lead, No Phoenix\n");
 	print_hands(&hand_space);
 
-	/*int nums[] = {1,2,4,1,2,3};*/
-	/*int n, m;*/
-	/*int *seqs;*/
-	/*int i, j;*/
+	// Case 2: lead hand, no phoenix
+	lead_hand.type = SINGLE;
+	lead_hand.length = 1;
+	lead_hand.high = 10;
+	lead_hand.low = 10;
+	lead_hand.cards[0] = 102;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("Single Lead ");
+	print_card(lead_hand.cards[0]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
 
-	/*n = (int) sizeof(nums) / sizeof(int);*/
-	/*m = 1;*/
-	/*for (i = 0; i < n; i++)*/
-		/*m *= nums[i];*/
-	/*seqs = malloc(sizeof(int) * m);*/
-	/*make_seqs((int) sizeof(nums) / sizeof(int), nums, seqs); */
+	lead_hand.type = DOUBLE;
+	lead_hand.length = 2;
+	lead_hand.high = 4;
+	lead_hand.low = 4;
+	lead_hand.cards[0] = 91;
+	lead_hand.cards[1] = 94;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("Double Lead ");
+	for (i = 0; i < 2; i++)
+		print_card(lead_hand.cards[i]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
 
-	/*for (i = 0; i < m; i++) {*/
-		/*printf("%d: ", i);*/
-		/*for(j = 0; j < n; j++)*/
-			/*printf("%d", *(seqs + i*n + j));*/
-		/*printf("\n");*/
-	/*}*/
-/*	
-	cards[0] = CARDS[0]; //Dog 
-	cards[1] = CARDS[6]; //6c
-	cards[2] = CARDS[9]; //7c
-	cards[3] = CARDS[11]; //Jc
-	cards[4] = CARDS[22]; //9d
-	cards[5] = CARDS[24]; //Jd
-	cards[6] = CARDS[26]; //Kd
-	cards[7] = CARDS[37]; //Jh
-	cards[8] = CARDS[38]; //Qh
-	cards[9] = CARDS[39]; //Kh
-	cards[10] = CARDS[48]; //10s
-	cards[11] = CARDS[50]; //Js
-	cards[12] = CARDS[53]; //As
-	cards[13] = CARDS[14]; //Dragon
-	*/
+	lead_hand.type = TRIPLE;
+	lead_hand.length = 3;
+	lead_hand.high = 8;
+	lead_hand.low = 8;
+	lead_hand.cards[0] = 81;
+	lead_hand.cards[1] = 82;
+	lead_hand.cards[2] = 84;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("Triple Lead ");
+	for (i = 0; i < 3; i++)
+		print_card(lead_hand.cards[i]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
 
-	/*
+	lead_hand.type = FULL;
+	lead_hand.length = 5;
+	lead_hand.high = 6;
+	lead_hand.low = 3;
+	lead_hand.cards[0] = 61;
+	lead_hand.cards[1] = 62;
+	lead_hand.cards[2] = 64;
+	lead_hand.cards[3] = 22;
+	lead_hand.cards[4] = 23;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("Full Lead ");
+	for (i = 0; i < lead_hand.length; i++)
+		print_card(lead_hand.cards[i]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
+
+	lead_hand.type = STRAIGHT;
+	lead_hand.length = 5;
+	lead_hand.high = 9;
+	lead_hand.low = 5;
+	lead_hand.cards[0] = 51;
+	lead_hand.cards[1] = 62;
+	lead_hand.cards[2] = 74;
+	lead_hand.cards[3] = 82;
+	lead_hand.cards[4] = 93;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("Straight Lead ");
+	for (i = 0; i < lead_hand.length; i++)
+		print_card(lead_hand.cards[i]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
+
+	lead_hand.type = DSTRAIGHT;
+	lead_hand.length = 4;
+	lead_hand.high = 6;
+	lead_hand.low = 5;
+	lead_hand.cards[0] = 51;
+	lead_hand.cards[1] = 52;
+	lead_hand.cards[2] = 62;
+	lead_hand.cards[3] = 64;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("DStraight Lead ");
+	for (i = 0; i < lead_hand.length; i++)
+		print_card(lead_hand.cards[i]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
+
+	cards[0] = 62; 
+	cards[1] = 72;
+	cards[2] = 82;
+	cards[3] = 92;
+	cards[4] = 102;
+	cards[5] = 112;
+	cards[6] = 122;
+	cards[7] = 104;
+	cards[8] = 10;
+	cards[9] = 101;
+	cards[10] = 103;
+	cards[11] = 91;
+	cards[12] = 93;
+	cards[13] = 143;
 	init_card_count(&card_count);
-	print_card_count(&card_count);
-	cards[7] = CARDS[37]; //Jh
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
-	*/
+
+	lead_hand.type = BOMB;
+	lead_hand.length = 4;
+	lead_hand.high = 9;
+	lead_hand.low = 9;
+	lead_hand.cards[0] = 91;
+	lead_hand.cards[1] = 92;
+	lead_hand.cards[2] = 93;
+	lead_hand.cards[3] = 94;
+	gen_hands(&card_count, &hand_space, &lead_hand);
+	printf("Bomb Lead ");
+	for (i = 0; i < lead_hand.length; i++)
+		print_card(lead_hand.cards[i]);
+	printf(", No Phoenix\n");
+	print_hands(&hand_space);
 
 	return 0;
 }

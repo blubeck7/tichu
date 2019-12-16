@@ -16,7 +16,7 @@ Card CARDS[NUM_CARDS] = {
 char *VALUE_NAMES[NUM_VALUES] = {
 	"Dog", "One",
 	"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A",
-	"Dragon", "Phoenix"
+	"Phoenix", "Dragon"
 };
 
 char *SUIT_NAMES[NUM_SUITS] = {"\0", "c", "d", "h", "s"};

@@ -9,8 +9,8 @@
 
 #define DOG 0
 #define ONE 10
-#define DRAGON 150
-#define PHOENIX 160
+#define PHOENIX 150
+#define DRAGON 160
 
 #define get_value(card) (card / 10)
 #define get_suit(card) (card % 10)
