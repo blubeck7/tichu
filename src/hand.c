@@ -19,7 +19,15 @@ int add_fulls(Card_Count *card_count, int triple, int double_,
 int gen_hands_no_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space);
 int gen_hands_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space,
 	Hand *lead_hand);
+int gen_hands_no_lead_ph(Card_Count *card_count, Hand_Space *hand_space);
 int add_flushes(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space);
+int add_triples_ph(Card_Count *card_count, int val, Hand_Space *hand_space);
+int add_doubles_ph(Card_Count *card_count, int val, Hand_Space *hand_space);
+int make_seqs(int len, int *nums, int *seqs);
+int add_straights_ph(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space);
+int add_dstraights_ph(Card_Count *card_count, int val, int len, int cnt,
     Hand_Space *hand_space);
 
 
@@ -50,12 +58,658 @@ int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand)
     else if (lead_hand && !has_ph)
         gen_hands_lead_no_ph(card_count, hand_space, lead_hand);
     else if (!lead_hand && has_ph)
-        ;
+        gen_hands_no_lead_ph(card_count, hand_space);
     else
         ;
 
     return 0;
 }
+
+int gen_hands_no_lead_ph(Card_Count *card_count, Hand_Space *hand_space)
+{
+    int i, count, j, k, sum;
+
+    for (i = 0; i < NUM_VALUES; i++) {
+        count = card_count->counts_s[i];
+        switch (count) {
+        case 4:
+            add_quad(card_count, i, hand_space);
+            add_triples_ph(card_count, i, hand_space);
+            add_doubles_ph(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
+			break;
+        case 3:
+            add_triples_ph(card_count, i, hand_space);
+            add_doubles_ph(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
+            break;
+        case 2:
+            add_triples_ph(card_count, i, hand_space);
+            add_doubles_ph(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
+            break;
+		case 1:
+			if (i > 1 && i < 15)
+            	add_doubles_ph(card_count, i, hand_space);
+            add_singles(card_count, i, hand_space);
+            break;
+        }
+    }
+
+    // straights and straight flushes
+    for (i = 5; i < card_count->num_cards + 1; i++) {
+        for (j = 1; j < 15 - i + 1; j++) {
+            sum = 0;
+            for (k = 0; k < i; k++) {
+                sum += card_count->one_flags[j + k];
+            }
+            if (sum >= i - 1)
+                add_straights_ph(card_count, j, i, hand_space);
+        }
+    }
+
+	// double straights
+	for (i = 2; i < (card_count->num_cards / 2) + 1; i++) { //len
+		for (j = 2; j < 15 - i + 1; j++) { //low val
+            sum = 0;
+            for (k = 0; k < i; k++) {
+				if (card_count->two_flags[j + k] == 0)
+					sum += card_count->one_flags[j + k];
+				else
+                	sum += 2*card_count->two_flags[j + k];
+            }
+            if (sum >= 2*i - 1) {
+                add_dstraights_ph(card_count, j, i, sum, hand_space);
+            }
+        }		
+	}
+
+	// full houses
+/*
+	for (i = 0; i < NUM_VALUES; i++) {
+		for (j = 0; j < NUM_VALUES; j++) {
+			if (i != j && card_count->counts_t[i] > 0 &&
+				card_count->counts_d[j] > 0)
+				add_fulls(card_count, i, j, hand_space);
+		}
+	}
+*/
+    return 0;
+}
+
+int add_dstraights_ph(Card_Count *card_count, int val, int len, int cnt,
+    Hand_Space *hand_space)
+{
+	int i, j, k, n;
+    int nums[MAX_HAND];
+    int *strs, num_strs;
+
+	if (cnt == 2 * len - 1) {
+		// The phoenix is needed
+		ph_pos = 0;
+    	for (i = 0; i < len; i++) {
+			if (!card_count->two_flags[i + val]) {
+				ph_pos = i;
+				break;
+			}
+		}
+
+    	num_strs = 1;
+    	for (i = 0; i < len; i++) {
+        	nums[i] = card_count->counts_d[i + val];
+			if (i == ph_pos)
+				nums[i]++;
+        	num_strs *= nums[i];
+    	}
+    	strs = malloc(sizeof(int) * len * num_strs);
+		make_seqs(len, nums, strs);
+
+    	for (i = 0; i < num_strs; i++) {
+        	n = hand_space->num_hands++;
+			hand_space->hands[n].type = DSTRAIGHT;     
+        	hand_space->hands[n].length = len * 2; 
+        	hand_space->hands[n].high = val + len - 1;
+			hand_space->hands[n].low = val;
+    		hand_space->hands[n].has_ph = 1;
+    		for (j = 0; j < len; j++) {
+    			k = *(strs + i * len + j);
+    			hand_space->hands[n].cards[2*j] =
+				card_count->doubles[j+val][k][0];
+				hand_space->hands[n].cards[2*j+1] =
+				card_count->doubles[j+val][k][1];
+		}
+	}
+
+	free(strs);
+
+
+
+
+
+
+    	for (k = 0; k < num_strs; k++) {
+        	n = hand_space->num_hands++;
+        	hand_space->hands[n].length = len;
+        	hand_space->hands[n].high = val + len - 1;
+			hand_space->hands[n].low = val;
+    		hand_space->hands[n].has_ph = 1;
+    		for (h = 0; h < len; h++) {
+    			m = *(strs + k * len + h);
+				if (h == ph_pos) // phoenix
+    				hand_space->hands[n].cards[h] = PHOENIX;
+				else 
+    				hand_space->hands[n].cards[h] =
+					card_count->singles[h + val][m];
+			}
+
+			flush = 1;
+			for (j = 1; j < len; j++) {
+				if (get_suit(hand_space->hands[n].cards[j]) !=
+					get_suit(hand_space->hands[n].cards[j - 1])) {
+					flush = 0;
+					break;
+				}
+			}
+			if (!flush)
+				hand_space->hands[n].type = STRAIGHT;
+			else
+				hand_space->hands[n].type = BOMB;
+
+		}
+		free(strs);
+		
+
+		
+
+
+	return 0;	
+}
+
+int add_straights_ph(Card_Count *card_count, int val, int len,
+    Hand_Space *hand_space)
+{
+    int i, j, k, n, h, m, flush, all, ph_pos;
+    int nums[MAX_HAND];
+    int *strs, num_strs;
+
+	// Get regular card counts
+    for (i = 0; i < len; i++)
+        nums[i] = card_count->counts_s[i + val];
+
+	// Is the phoenix needed and if so where?
+	all = 1;
+	ph_pos = 0;
+    for (i = 0; i < len; i++) {
+		if (nums[i] == 0) {
+			all = 0;
+			ph_pos = i;
+			break;
+		}
+	}
+
+	if (all) {
+		/* Phoenix is an extra card. Call add_straight to get regular
+		 * straights. Then loop through each position with the phoenix as the
+		 * only card in that position and the remaining cards in the other
+		 * positions.
+		 */
+		add_straights(card_count, val, len, hand_space);
+		// straights with the phoenix in each position
+    	for (i = 0; i < len; i++) {
+    		num_strs = 1;
+			for (j = 0; j < len; j++) {
+				if (i == j)
+					nums[j] = 1;
+				else	
+        			nums[j] = card_count->counts_s[j + val];
+				num_strs *= nums[j];
+			}
+
+    		strs = malloc(sizeof(int) * len * num_strs);
+			make_seqs(len, nums, strs);
+    
+    		// add the straights to the hand space
+    		for (k = 0; k < num_strs; k++) {
+        		n = hand_space->num_hands++;
+        		hand_space->hands[n].length = len;
+        		hand_space->hands[n].high = val + len - 1;
+				hand_space->hands[n].low = val;
+    			for (h = 0; h < len; h++) {
+    				m = *(strs + k * len + h);
+					if (h == i) { // phoenix
+    					hand_space->hands[n].has_ph = 1;
+    					hand_space->hands[n].cards[h] = PHOENIX;
+					} else 
+    					hand_space->hands[n].cards[h] =
+						card_count->singles[h + val][m];
+				}
+			}
+			free(strs);
+    	}
+	} else {
+		// phoenix fills in a specific missing card
+    	num_strs = 1;
+		for (j = 0; j < len; j++) {
+			if (ph_pos == j)
+				nums[j] = 1;
+			num_strs = num_strs * nums[j];
+		}
+    	strs = malloc(sizeof(int) * len * num_strs);
+		make_seqs(len, nums, strs);
+
+    	for (k = 0; k < num_strs; k++) {
+        	n = hand_space->num_hands++;
+        	hand_space->hands[n].length = len;
+        	hand_space->hands[n].high = val + len - 1;
+			hand_space->hands[n].low = val;
+    		hand_space->hands[n].has_ph = 1;
+    		for (h = 0; h < len; h++) {
+    			m = *(strs + k * len + h);
+				if (h == ph_pos) // phoenix
+    				hand_space->hands[n].cards[h] = PHOENIX;
+				else 
+    				hand_space->hands[n].cards[h] =
+					card_count->singles[h + val][m];
+			}
+
+			flush = 1;
+			for (j = 1; j < len; j++) {
+				if (get_suit(hand_space->hands[n].cards[j]) !=
+					get_suit(hand_space->hands[n].cards[j - 1])) {
+					flush = 0;
+					break;
+				}
+			}
+			if (!flush)
+				hand_space->hands[n].type = STRAIGHT;
+			else
+				hand_space->hands[n].type = BOMB;
+
+		}
+		free(strs);
+	}
+    return 0;
+}
+
+int add_triples_ph(Card_Count *card_count, int val, Hand_Space *hand_space)
+{
+	int j;  
+	// at least two regular cards plus the phoenix
+	switch (card_count->counts_s[val]) {
+	case 2:
+		// 3 choose 3 is 1
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = PHOENIX;
+
+		break;
+	case 3:
+		// 4 choose 3 is 4
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = card_count->singles[val][2];
+
+		// 2nd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = PHOENIX;
+
+		// 3rd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+		hand_space->hands[j].cards[2] = PHOENIX;
+
+		// 4th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+		hand_space->hands[j].cards[2] = PHOENIX;
+
+		break;
+
+	case 4:
+		// 5 choose 3 is 10
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = card_count->singles[val][2];
+
+		// 2nd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = card_count->singles[val][3];
+
+		// 3rd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+		hand_space->hands[j].cards[2] = card_count->singles[val][3];
+
+		// 4th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+		hand_space->hands[j].cards[2] = card_count->singles[val][3];
+
+		// 5th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][0];
+		hand_space->hands[j].cards[2] = card_count->singles[val][1];
+
+		// 6th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][0];
+		hand_space->hands[j].cards[2] = card_count->singles[val][2];
+
+		// 7th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][0];
+		hand_space->hands[j].cards[2] = card_count->singles[val][3];
+
+		// 8th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = card_count->singles[val][2];
+
+		// 9th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+		hand_space->hands[j].cards[2] = card_count->singles[val][3];
+
+		// 10th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = TRIPLE;
+		hand_space->hands[j].length = 3;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+		hand_space->hands[j].cards[2] = card_count->singles[val][3];
+
+		break;
+
+	default:
+		break;
+	}
+
+    return 0;
+}   
+
+int add_doubles_ph(Card_Count *card_count, int val, Hand_Space *hand_space)
+{
+	int j;  
+	// at least one regular card plus the phoenix
+	switch (card_count->counts_s[val]) {
+	case 1:
+		// 2 choose 2 is 1
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = PHOENIX;
+
+		break;
+	case 2:
+		// 3 choose 2 is 3
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+
+		// 2nd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = PHOENIX;
+
+		// 3rd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = PHOENIX;
+
+		break;
+
+	case 3:
+		// 4 choose 2 is 6
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+
+		// 2nd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+
+		// 3rd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+
+		// 4th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = PHOENIX;
+
+		// 5th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = PHOENIX;
+
+		// 6th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = card_count->singles[val][2];
+		hand_space->hands[j].cards[1] = PHOENIX;
+
+		break;
+
+	case 4:
+		// 5 choose 2 is 10
+		// 1st combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+
+		// 2nd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+
+		// 3rd combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][0];
+		hand_space->hands[j].cards[1] = card_count->singles[val][3];
+
+		// 4th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+
+		// 5th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][1];
+		hand_space->hands[j].cards[1] = card_count->singles[val][3];
+
+		// 6th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 0;
+		hand_space->hands[j].cards[0] = card_count->singles[val][2];
+		hand_space->hands[j].cards[1] = card_count->singles[val][3];
+
+		// 7th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][0];
+
+		// 8th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][1];
+
+		// 9th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][2];
+
+		// 10th combination
+		j = hand_space->num_hands++;
+		hand_space->hands[j].type = DOUBLE;
+		hand_space->hands[j].length = 2;
+		hand_space->hands[j].high = hand_space->hands[j].low = val;
+		hand_space->hands[j].has_ph = 1;
+		hand_space->hands[j].cards[0] = PHOENIX; 
+		hand_space->hands[j].cards[1] = card_count->singles[val][3];
+
+		break;
+
+	default:
+		break;
+	}
+
+    return 0;
+}   
 
 int gen_hands_lead_no_ph(Card_Count *card_count, Hand_Space *hand_space,
 	Hand *lead_hand)
@@ -399,6 +1053,8 @@ int add_singles(Card_Count *card_count, int val, Hand_Space *hand_space)
 		hand_space->hands[j].high = value;
 		hand_space->hands[j].low = value;
 		hand_space->hands[j].cards[0] = card;
+		if (card == PHOENIX)
+			hand_space->hands[j].has_ph = 1;
 	}
 
     return 0;
@@ -504,7 +1160,8 @@ int print_hand(Hand *hand)
 		break;
 	}
 
-	printf("len=%d high=%d low=%d ", hand->length, hand->high, hand->low);
+	printf("len=%d high=%d low=%d has_ph=%d ",
+			hand->length, hand->high, hand->low, hand->has_ph);
 
 	printf("cards=");
 	for (i = 0; i < hand->length; i++)
@@ -565,6 +1222,7 @@ int init_hand(Hand *hand)
 	hand->length = 0;
 	hand->high = 0;
 	hand->low = 0;
+	hand->has_ph = 0;
 	for (i = 0; i < MAX_HAND; i++)
 		hand->cards[i] = 0;
 

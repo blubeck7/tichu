@@ -24,18 +24,18 @@ struct hand_t {
 	int length; // number of cards 
 	int high; // high card
 	int low; // low card
+	int has_ph; // if the phoenix is part of the hand
 	Card cards[MAX_HAND];
 };
 
 struct hand_space_t {
     int num_hands;
-    Hand hands[270];
+    Hand hands[360];
 };
 
 int gen_hands(Card_Count *card_count, Hand_Space *hand_space, Hand *lead_hand);
 int print_hands(Hand_Space *hand_space);
 int print_hand(Hand *hand);
-int make_seqs(int len, int *nums, int *seqs);
 int init_hand_space(Hand_Space *hand_space);
 int init_hand(Hand *hand);
 

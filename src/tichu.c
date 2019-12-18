@@ -13,25 +13,21 @@ int main(int argc, char *argv[])
 	Card_Count card_count;
 	Hand_Space hand_space;
 	Hand lead_hand;
-	int i;
+	//int i;
 
 	printf("Welcome to Tichu!\n");
 
 	srand((unsigned) time(NULL));
 	rand_hand(cards);
 	sort_cards(cards, 14);
-
 	init_card_count(&card_count);
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
-
 	init_hand_space(&hand_space);
-	// Testing the code to generate hands
-	// Case 1: no lead hand, no phoenix
 	gen_hands(&card_count, &hand_space, NULL);
-	printf("No lead, No Phoenix\n");
 	print_hands(&hand_space);
 
+	/*
 	// Case 2: lead hand, no phoenix
 	lead_hand.type = SINGLE;
 	lead_hand.length = 1;
@@ -117,11 +113,13 @@ int main(int argc, char *argv[])
 		print_card(lead_hand.cards[i]);
 	printf(", No Phoenix\n");
 	print_hands(&hand_space);
+	*/
 
-	cards[0] = 62; 
-	cards[1] = 72;
-	cards[2] = 82;
-	cards[3] = 92;
+		/*
+	cards[0] = 61; 
+	cards[1] = 62;
+	cards[2] = 63;
+	cards[3] = 132;
 	cards[4] = 102;
 	cards[5] = 112;
 	cards[6] = 122;
@@ -130,11 +128,18 @@ int main(int argc, char *argv[])
 	cards[9] = 101;
 	cards[10] = 103;
 	cards[11] = 91;
-	cards[12] = 93;
-	cards[13] = 143;
+	cards[12] = 92;
+	cards[13] = 150;
+
+	sort_cards(cards, 14);
+
 	init_card_count(&card_count);
 	count_cards(cards, 14, &card_count);
 	print_card_count(&card_count);
+
+	init_hand_space(&hand_space);
+	gen_hands(&card_count, &hand_space, NULL);
+	print_hands(&hand_space);
 
 	lead_hand.type = BOMB;
 	lead_hand.length = 4;
@@ -150,6 +155,7 @@ int main(int argc, char *argv[])
 		print_card(lead_hand.cards[i]);
 	printf(", No Phoenix\n");
 	print_hands(&hand_space);
+	*/
 
 	return 0;
 }

@@ -25,9 +25,9 @@ struct card_count_t {
 	int counts_s[NUM_VALUES];
 	Card singles[NUM_VALUES][4];
 	int counts_d[NUM_VALUES];
-	Card doubles[NUM_VALUES][6][2];
+	Card doubles[NUM_VALUES][10][2];
 	int counts_t[NUM_VALUES];
-	Card triples[NUM_VALUES][4][3];
+	Card triples[NUM_VALUES][10][3];
 };
 
 extern Card CARDS[NUM_CARDS];
