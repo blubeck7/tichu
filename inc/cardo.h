@@ -1,20 +1,43 @@
 #ifndef CARD_H
 #define CARD_H
 
-typedef struct card Card;
-typedef struct card CardSet;
+#define NUM_CARDS 56
+#define NUM_VALUES 17
+#define NUM_SUITS 4 
 
-Card *create_card(int value; int suit; char *name);
-int destroy_card(Card *card);
-int get_value(Card *card);
-int get_suit(Card *card);
-char *get_name(Card *card);
-int set_value(Card *card, int value);
-int set_suit(Card *card, int suit);
-char *set_name(Card *card, char *name);
-int compare(Card *card1, Card *card2);
-int copy(Card *card1, Card *card2);
-int print_card(Card *card);
+#define BLANK 0
+#define DOG 4
+#define DOG_VALUE 0
+#define ONE 14
+#define ONE_VALUE 1
+#define PHOENIX 154
+#define PHOENIX_VALUE 15
+#define DRAGON 164
+#define DRAGON_VALUE 16
 
-CardSet *create_cardset(int num_cards);
-int destroy_cardset(CardSet *cardset);
+typedef int Card;
+typedef struct cardset {
+	int num_cards;
+	Card cards[NUM_CARDS];
+} CardSet;
+
+extern Card CARDS[NUM_CARDS];
+
+int get_value(Card card);
+int get_suit(Card card);
+void print_card(Card card);
+
+void init_cardset(CardSet *cardset);
+void print_cardset(CardSet *cardset);
+void add_card(CardSet *cardset, Card card);
+void remove_card(CardSet *cardset, Card card);
+void sort_cardset(CardSet *cardset);
+int has_dog(CardSet *cardset);
+int has_one(CardSet *cardset);
+int has_phoenix(CardSet *cardset);
+int has_dragon(CardSet *cardset);
+int has_card(CardSet *cardset, Card card);
+int count_value(CardSet *cardset, int value);
+int get_num_cards(CardSet *cardset);
+
+#endif // CARD_H
