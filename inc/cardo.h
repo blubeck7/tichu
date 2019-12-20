@@ -16,10 +16,6 @@
 #define DRAGON_VALUE 16
 
 typedef int Card;
-typedef struct cardset {
-	int num_cards;
-	Card cards[NUM_CARDS];
-} CardSet;
 
 extern Card CARDS[NUM_CARDS];
 
@@ -27,17 +23,20 @@ int get_value(Card card);
 int get_suit(Card card);
 void print_card(Card card);
 
-void init_cardset(CardSet *cardset);
-void print_cardset(CardSet *cardset);
-void add_card(CardSet *cardset, Card card);
-void remove_card(CardSet *cardset, Card card);
-void sort_cardset(CardSet *cardset);
-int has_dog(CardSet *cardset);
-int has_one(CardSet *cardset);
-int has_phoenix(CardSet *cardset);
-int has_dragon(CardSet *cardset);
-int has_card(CardSet *cardset, Card card);
-int count_value(CardSet *cardset, int value);
-int get_num_cards(CardSet *cardset);
+void print_cards(Card cards[], int n);
+void sort_cards(Card cards[], int n);
+void add_card(Card cards[], int *n, Card card);
+void remove_card(Card cards[], int *n, Card card);
+int has_card(Card cards[], int n, Card card);
+int has_dog(Card cards[], int n);
+int has_one(Card cards[], int n);
+int has_phoenix(Card cards[], int n);
+int has_dragon(Card cards[], int n);
+
+void make_doubles(Card cards[], int n, Card doubles[], int d);
+/* Takes a set of cards of size n and makes all combinations of 2 elements */
+
+//int count_value(CardSet *cardset, int value);
+//int get_num_cards(CardSet *cardset);
 
 #endif // CARD_H

@@ -18,38 +18,6 @@ char *VALUE_NAMES[NUM_VALUES] = {
 
 char *SUIT_NAMES[NUM_SUITS + 1] = {"c", "d", "h", "s", ""};
 
-static int search_card(CardSet *cardset, Card card)
-{
-	int low, high, mid;
-
-	sort_cardset(cardset);
-
-	low = 0;
-	high = cardset->num_cards - 1;
-	while (low <= high) {
-		mid = (low + high) / 2;
-		if (card == cardset->cards[mid])
-			return mid;
-		else if (card > cardset->cards[mid])
-			low = mid + 1;
-		else
-			high = mid - 1;
-	}
-
-	return -1;
-}
-
-static void swap_cards(CardSet *cardset, int i, int j)
-{
-	Card card;
-
-	card = cardset->cards[i];
-	cardset->cards[i] = cardset->cards[j];
-	cardset->cards[j] = card;
-
-	return;
-}
-
 int get_value(Card card)
 {
 	return card / 10;
@@ -65,92 +33,104 @@ void print_card(Card card)
 	printf("%s%s", VALUE_NAMES[get_value(card)], SUIT_NAMES[get_suit(card)]);
 }
 
-void init_cardset(CardSet *cardset)
+void print_cards(Card cards[], int n)
 {
 	int i;
 
-	cardset->num_cards = 0;
-	for (i = 0; i < NUM_CARDS; i++)
-		cardset->cards[i] = BLANK;
-}
-
-void print_cardset(CardSet *cardset)
-{
-	int i;
-
-	printf("Number of Cards: %d\n", cardset->num_cards);
-	if (!cardset->num_cards)
-	   return;
-
-	for (i = 0; i < cardset->num_cards; i++) {
-		print_card(cardset->cards[i]);
-		printf(" ");
+	for (i = 0; i < n; i++) {
+		print_card(cards[i]);
+		if (i < n - 1)
+			printf(" ");
 	}
 	printf("\n");
 }
 
-void add_card(CardSet *cardset, Card card)
+static void swap_cards(Card cards[], int i, int j)
 {
-	cardset->cards[cardset->num_cards++] = card;
+	Card card;
+
+	card = cards[i];
+	cards[i] = cards[j];
+	cards[j] = card;
+
+	return;
 }
 
-void remove_card(CardSet *cardset, Card card)
-{
-	int i, pos;
-
-	if ((pos = search_card(cardset, card)) < 0)
-		return;
-
-	cardset->num_cards--;
-	for (i = pos; i < cardset->num_cards; i++) 
-		cardset->cards[i] = cardset->cards[i + 1];
-	cardset->cards[i] = 0;
-}
-
-void sort_cardset(CardSet *cardset)
+void sort_cards(Card cards[], int n)
 {
 	int i, done;
 
 	done = 0;
 	while (!done) {
 		done = 1;
-		for (i = 0; i < cardset->num_cards - 1; i++) {
-			if (cardset->cards[i + 1] < cardset->cards[i]) {
-				swap_cards(cardset, i, i + 1);
+		for (i = 0; i < n - 1; i++) {
+			if (cards[i + 1] < cards[i]) {
+				swap_cards(cards, i, i + 1);
 				done = 0;
 			}
 		}
 	}
 }
 
-int has_dog(CardSet *cardset)
+void add_card(Card cards[], int *n, Card card)
 {
-	return has_card(cardset, DOG);
+	cards[(*n)++] = card;
 }
 
-int has_one(CardSet *cardset)
+static int search_card(Card cards[], int n, Card card, int *p)
 {
-	return has_card(cardset, ONE);
-}
+	int i;
 
-int has_phoenix(CardSet *cardset)
-{
-	return has_card(cardset, PHOENIX);
-}
-
-int has_dragon(CardSet *cardset)
-{
-	return has_card(cardset, DRAGON);
-}
-
-int has_card(CardSet *cardset, Card card)
-{
-	if (search_card(cardset, card) >= 0)
-		return 1;
+	for (i = 0; i < n; i++)
+		if (cards[i] == card) {
+			*p = i;
+			return 1;
+		}
 
 	return 0;
 }
 
+void remove_card(Card cards[], int *n, Card card)
+{
+	int i, p;
+
+	if (!search_card(cards, *n, card, &p))
+		return;
+
+	(*n)--;
+	for (i = p; i < *n; i++) 
+		cards[i] = cards[i + 1];
+	cards[i] = 0;
+}
+
+int has_card(Card cards[], int n, Card card)
+{
+	int p;
+
+	return search_card(cards, n, card, &p);
+}
+
+int has_dog(Card cards[], int n)
+{
+	return has_card(cards, n, DOG);
+}
+
+int has_one(Card cards[], int n)
+{
+	return has_card(cards, n, ONE);
+}
+
+int has_phoenix(Card cards[], int n)
+{
+	return has_card(cards, n, PHOENIX);
+}
+
+int has_dragon(Card cards[], int n)
+{
+	return has_card(cards, n, DRAGON);
+}
+
+/*
 int count_value(CardSet *cardset, int value)
 {
 	int i, count;
@@ -183,3 +163,4 @@ int get_num_cards(CardSet *cardset)
 {
 	return cardset->num_cards;
 }
+*/
