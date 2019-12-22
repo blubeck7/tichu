@@ -2,15 +2,31 @@
 #include <stdlib.h>
 #include <time.h>
 #include "../inc/cardo.h"
+#include "../inc/tricko.h"
 
 int rand_hand(Card cards[]);
 
 int main(int argc, char *argv[])
 {
 	Card cards[14];
+	int n;
+	TrickSet trickset;
+	//TrickHelper trickhelper;
 
+	n = 14;
 	rand_hand(cards);
-	print_cards(cards, 14);
+	sort_cards(cards, n);
+	print_cards(cards, n);
+	make_singles(&trickset, cards, n);
+	print_trickset(&trickset);
+	
+	//init_trickhelper(&trickhelper);
+	//set_trickhelper(&trickhelper, cards, n);
+	//print_trickhelper(&trickhelper);
+
+
+
+
 	/*
 	sort_cardset();
 	print_cardset(&cardset);

@@ -45,10 +45,10 @@
 #obj/hand.o: src/hand.c inc/card.h inc/hand.h
 	#gcc -Wall -std=c99 -c -O3 -o obj/hand.o src/hand.c
 
-tichuo: obj/tichuo.o obj/cardo.o
-	gcc -Wall -std=c99 -O3 -o bin/tichuo obj/tichuo.o obj/cardo.o
+tichuo: obj/tichuo.o obj/cardo.o obj/tricko.o
+	gcc -Wall -std=c99 -O3 -o bin/tichuo obj/tichuo.o obj/cardo.o obj/tricko.o
 
-obj/tichuo.o: src/tichuo.c inc/cardo.h
+obj/tichuo.o: src/tichuo.c inc/cardo.h inc/tricko.h
 	gcc -Wall -std=c99 -c -O3 -o obj/tichuo.o src/tichuo.c
 
 obj/cardo.o: src/cardo.c inc/cardo.h

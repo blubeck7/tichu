@@ -3,6 +3,7 @@
 
 #define NUM_CARDS 56
 #define NUM_VALUES 17
+#define NUM_RVALUES 13
 #define NUM_SUITS 4 
 
 #define BLANK 0
@@ -22,6 +23,8 @@ extern Card CARDS[NUM_CARDS];
 int get_value(Card card);
 int get_suit(Card card);
 void print_card(Card card);
+int is_phoenix(Card card);
+int is_special(Card card);
 
 void print_cards(Card cards[], int n);
 void sort_cards(Card cards[], int n);
@@ -33,7 +36,10 @@ int has_one(Card cards[], int n);
 int has_phoenix(Card cards[], int n);
 int has_dragon(Card cards[], int n);
 
-void make_doubles(Card cards[], int n, Card doubles[], int d);
+
+
+
+//void make_doubles(Card cards[], int n, Card doubles[], int d);
 /* Takes a set of cards of size n and makes all combinations of 2 elements */
 
 //int count_value(CardSet *cardset, int value);

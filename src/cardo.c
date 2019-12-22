@@ -33,6 +33,22 @@ void print_card(Card card)
 	printf("%s%s", VALUE_NAMES[get_value(card)], SUIT_NAMES[get_suit(card)]);
 }
 
+int is_phoenix(Card card)
+{
+	if (card == PHOENIX)
+		return 1;
+
+	return 0;
+}
+
+int is_special(Card card)
+{
+	if (card > ONE && card < PHOENIX)
+		return 0;
+
+	return 1;
+}
+
 void print_cards(Card cards[], int n)
 {
 	int i;
