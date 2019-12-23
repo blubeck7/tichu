@@ -4,24 +4,29 @@
 #include "../inc/cardo.h"
 #include "../inc/tricko.h"
 
-int rand_hand(Card cards[]);
+int rand_hand(Card cards[], int num_cards);
+
+TrickSet trickset;
 
 int main(int argc, char *argv[])
 {
-	Card cards[14];
+	Card cards[14], card;
 	int n;
-	TrickSet trickset;
-	//Trick trick;
+	Trick trick;
 	//TrickHelper trickhelper;
 
 	n = 14;
-	rand_hand(cards);
+	card = 101;
+	rand_hand(cards, n);
 	sort_cards(cards, n);
 	print_cards(cards, n);
-	make_straights(&trickset)
-	//set_trick(&trick, SINGLE, 1, 1, 16, 16, 0, cards);
+	init_trickset(&trickset);
+	set_trick(&trick, SINGLE, 1, 1, 10, 10, 0, &card);
+	make_singles(&trickset, &trick, cards, n);
+	print_trickset(&trickset);
 	//make_singles(&trickset, &trick, cards, n);
 	//print_trickset(&trickset);
+	//make_straights(&trickset);
 	
 	//init_trickhelper(&trickhelper);
 	//set_trickhelper(&trickhelper, cards, n);
@@ -55,7 +60,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int rand_hand(Card cards[14])
+int rand_hand(Card cards[], int num_cards)
 {
 	Card deck[56];
 	int n_rem, pos, i, j, n;
@@ -67,7 +72,7 @@ int rand_hand(Card cards[14])
 
 	n_rem = 56;
 	n = 0;
-	for (i = 0; i < 14; i++) {
+	for (i = 0; i < num_cards; i++) {
 		/* Randomly choose an unshuffled card. Then add it to the
 		 * shuffled array. Shift the unshuffled cards down.
 		 */

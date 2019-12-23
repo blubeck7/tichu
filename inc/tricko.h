@@ -18,9 +18,10 @@
 #define MAX_TRICKS 500
 
 typedef struct trickhelper {
-    int has_phoenix;
-	int reg_counts[NUM_RVALUES];
-	int reg_cards[NUM_RVALUES][NUM_SUITS];
+	int num_cards;
+	int high;
+	int counts[NUM_VALUES];
+	int cards[NUM_VALUES][NUM_SUITS];
 } TrickHelper;
 
 typedef struct trick {
@@ -55,8 +56,12 @@ void add_single(TrickSet *trickset, Card card);
 void make_straights(TrickSet *trickset, Trick *top, Card cards[], int n);
 void add_straights(TrickSet *trickset, int low, int length,
 	TrickHelper *trickhelper);
-int calc_num_straights(int counts[], int n);
-/* adds all straights of a specific length starting at low */
+/* adds all possible straights of a specific length starting at low */
+void add_straights_ph(TrickSet *trickset, int low, int length,
+	TrickHelper *trickhelper);
+void add_straights_r(TrickSet *trickset, int low, int length,
+	TrickHelper *trickhelper);	
+int sum_straight(int low, int length, TrickHelper *trickhelper, int *pos);
 /*
 int is_valid_trick(Trick *trick, Trick *top);
 

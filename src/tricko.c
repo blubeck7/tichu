@@ -11,12 +11,12 @@ void init_trickhelper(TrickHelper *trickhelper)
 {
 	int i, j;
 
-	trickhelper->has_phoenix = 0;
-	for (i = 0; i < NUM_RVALUES; i++) {
-		trickhelper->reg_counts[i] = 0; 
-		for (j = 0; j < NUM_SUITS; j++) {
-			trickhelper->reg_cards[i][j] = BLANK;
-		}
+	trickhelper->num_cards = 0;
+	trickhelper->high = 0;
+	for (i = 0; i < NUM_VALUES; i++) {
+		trickhelper->counts[i] = 0; 
+		for (j = 0; j < NUM_SUITS; j++)
+			trickhelper->cards[i][j] = BLANK;
 	}
 }
 
@@ -24,37 +24,35 @@ void print_trickhelper(TrickHelper *trickhelper)
 {
 	int i, j, k;
 
-	printf("TrickHelper\n");
-	printf("Has phoenix %d\n", trickhelper->has_phoenix);
-	printf("Reg counts\n");
-	for (i = 0; i < NUM_RVALUES; i++) {
-		k = trickhelper->reg_counts[i];
-		printf("%d %d ", i + 2, k); 
+	printf("Trick Helper: %d cards %d high\n",
+		trickhelper->num_cards, trickhelper->high);
+	printf("Counts\n");
+	for (i = 0; i < NUM_VALUES; i++) {
+		k = trickhelper->counts[i];
+		printf("%d %d ", i, k); 
 		for (j = 0; j < k; j++) {
 			if (j < k - 1) {
-				print_card(trickhelper->reg_cards[i][j]);
+				print_card(trickhelper->cards[i][j]);
 				printf(" ");
 			} else
-				print_card(trickhelper->reg_cards[i][j]);
+				print_card(trickhelper->cards[i][j]);
 		}
-		printf("\n");	
+		printf("\n");
 	}
 }
 
 void set_trickhelper(TrickHelper *trickhelper, Card cards[], int n)
 {
-	int i, j, k;
-	Card card;
+	int i, value, pos;
 
+	sort_cards(cards, n);
+
+	trickhelper->num_cards = n;
+	trickhelper->high = get_value(cards[n - 1]);
 	for (i = 0; i < n; i++) {
-		card = cards[i];
-		if (card == PHOENIX)
-			trickhelper->has_phoenix = 1;
-		if (card > ONE && card < PHOENIX) {
-			j = get_value(card) - 2;
-			k = trickhelper->reg_counts[j]++;
-			trickhelper->reg_cards[j][k] = card;
-		}
+		value = get_value(cards[i]);
+		pos = trickhelper->counts[value]++;
+		trickhelper->cards[value][pos] = cards[i];
 	}
 }
 
@@ -111,7 +109,7 @@ void print_trickset(TrickSet *trickset)
 {
 	int i;
 
-	printf("TrickSet\n");
+	printf("Trick Set\n");
 	printf("%d tricks\n", trickset->num_tricks);
 	for (i = 0; i < trickset->num_tricks; i++) {
 		print_trick(&trickset->tricks[i]);
@@ -123,111 +121,72 @@ void make_singles(TrickSet *trickset, Trick *top, Card cards[], int n)
 {
 	int i;
 
-	if (!top)
-		for (i = 0; i < n; i++)
-			add_single(trickset, cards[i]);
-	else
+	if (top) {
 		for (i = 0; i < n; i++)	 
 			if (get_value(cards[i]) > top->high)
 				add_single(trickset, cards[i]);
+	} else
+		for (i = 0; i < n; i++)
+			add_single(trickset, cards[i]);
 }
 
 void add_single(TrickSet *trickset, Card card)
 {
-	int i;
+	int value;
+	Trick *trick;
 
-	i = trickset->num_tricks++;
-	trickset->tricks[i].type = SINGLE;
-	trickset->tricks[i].length = 1;
-	trickset->tricks[i].num_cards = 1;
-	trickset->tricks[i].high = get_value(card);
-	trickset->tricks[i].low = trickset->tricks[i].high;
-	trickset->tricks[i].has_phoenix = is_phoenix(card);
-	trickset->tricks[i].cards[0] = card;
+	trick = trickset->tricks + trickset->num_tricks++;
+	value = get_value(card);
+	set_trick(trick, SINGLE, 1, 1, value, value, is_phoenix(card), &card);
 }
 
 void make_straights(TrickSet *trickset, Trick *top, Card cards[], int n)
 {
-	int low, length;
 	TrickHelper trickhelper;
 
 	init_trickhelper(&trickhelper);
 	set_trickhelper(&trickhelper, cards, n);
 	
-	low = ONE_VALUE;
-	length = MAX_STRAIGHT_LENGTH;
-	if (top) {
-		low = top->low + 1;
-		length = top->length;
-	}
-	
-	add_straights(trickset, low, length, &trickhelper);
+	if (top) 
+		add_straights(trickset, top->low + 1, top->length, &trickhelper);
+
+	return;
 }
 
 void add_straights(TrickSet *trickset, int low, int length,
 	TrickHelper *trickhelper)
 {
-	int num_strs;
+	int i, sum, has_phoenix, pos;
 
-	num_strs = calc_num_straights(trickhelper->reg_counts + low, length);
-	printf("num_strs=%d\n", num_strs);
+	sum = sum_straight(low, length, trickhelper, &pos);
+	has_phoenix = trickhelper->counts[PHOENIX_VALUE];
+	
+	if (sum == length - 1 && has_phoenix)
+		add_straights_ph(trickset, low, length, pos, trickhelper);
+	else if (sum == length && has_phoenix) {
+		add_straights_r(trickset, low, length, trickhelper);
+		for (i = 0; i < length; i++)
+			add_straights_ph(trickset, low, length, pos, trickhelper);
+	} else if (sum == length && !has_phoenix)
+		add_straights_r(trickset, low, length, trickhelper);
+
+	return;
 }
 
-int calc_num_straights(int counts[], int n)
+int sum_straight(int low, int length, TrickHelper *trickhelper, int *pos)
 {
-	int i, num_strs;
+	int i, sum;
 
-	num_strs = 1;
-	for (i = 0; i < n; i++)
-		num_strs *= counts[i];	
+	sum = 0;
+	for (i = 0; i < length; i++)
+		if (trickhelper->counts[i + low])
+			sum++;
+		else
+			*pos = i;
 
-	return num_strs;
-}
-/*
-int make_seqs(int len, int *nums, int *seqs)
-{
-	int i, j, k, n, m;
-	int num_elems, num_reps, num_cycs, num_seqs;
-
-	if (len < 1) {
-		seqs = NULL;
-		return 0;
-	}
-//printf("len=%d\n", len);
-
-	num_seqs = *nums;
-	for (i = 1; i < len; i++)
-		num_seqs *= *(nums + i);
-
-	num_elems = *nums;
-	num_cycs = 1;
-	num_reps = num_seqs / num_elems;
-	for (n = 0; n < len; n++) {
-		if (n > 0) {
-			num_cycs *= num_elems; 
-			num_elems = *(nums + n);
-			num_reps = num_reps / num_elems;
-		}
-//printf("n=%d\n", n);
-//printf("num_cyc=%d, num_elem=%d, num_rep=%d\n\n",
-//num_cycs, num_elems, num_reps);
-
-		m = 0;
-		for (i = 0; i < num_cycs; i++) {
-			for (j = 0; j < num_elems; j++) {
-				for (k = 0; k < num_reps; k++) {
-					*(seqs + m*len + n) = j;
-//printf("m=%d, n=%d, cyc=%d, elem=%d, rep=%d\n", m, n, i, j, k);
-					m++;
-				}
-			}
-		}
-	}	
-
-	return 0;
+	return sum;
 }
 
-*/
 
 
 
@@ -237,9 +196,6 @@ int make_seqs(int len, int *nums, int *seqs)
 
 
 
-/*
-int is_valid_trick(Trick *trick, Trick *top);
 
-void init_trickset(TrickSet *trickset);
-void add_single(TrickSet *trickset, Trick *single);
-*/
+
+
