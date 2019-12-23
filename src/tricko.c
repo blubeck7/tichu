@@ -100,6 +100,22 @@ void set_trick(Trick *trick, int type, int length, int num_cards, int high,
 	return;
 }
 
+void copy_trick(Trick *dest, Trick *src)
+{
+	int i;
+
+	dest->type = src->type;
+	dest->length = src->length;
+	dest->num_cards = src->num_cards;
+	dest->high = src->high;
+	dest->low = src->low;
+	dest->has_phoenix = src->has_phoenix;
+	for (i = 0; i < dest->num_cards; i++)
+		dest->cards[i] = src->cards[i];
+
+	return;
+}
+
 void init_trickset(TrickSet *trickset)
 {
 	trickset->num_tricks = 0;
@@ -117,6 +133,16 @@ void print_trickset(TrickSet *trickset)
 	}
 }
 
+void add_trick(TrickSet *trickset, Trick *trick)
+{
+	int i;
+
+	i = trickset->num_tricks++;
+	copy_trick(&trickset->tricks[i], trick);
+
+	return;
+}
+
 void make_singles(TrickSet *trickset, Trick *top, Card cards[], int n)
 {
 	int i;
@@ -128,52 +154,127 @@ void make_singles(TrickSet *trickset, Trick *top, Card cards[], int n)
 	} else
 		for (i = 0; i < n; i++)
 			add_single(trickset, cards[i]);
+
+	return;
 }
 
 void add_single(TrickSet *trickset, Card card)
 {
 	int value;
-	Trick *trick;
+	Trick trick;
 
-	trick = trickset->tricks + trickset->num_tricks++;
 	value = get_value(card);
-	set_trick(trick, SINGLE, 1, 1, value, value, is_phoenix(card), &card);
+	set_trick(&trick, SINGLE, 1, 1, value, value, is_phoenix(card), &card);
+	add_trick(trickset, &trick);
+
+	return;
 }
 
 void make_straights(TrickSet *trickset, Trick *top, Card cards[], int n)
 {
+	int i, j;
 	TrickHelper trickhelper;
 
 	init_trickhelper(&trickhelper);
 	set_trickhelper(&trickhelper, cards, n);
 	
 	if (top) 
-		add_straights(trickset, top->low + 1, top->length, &trickhelper);
-
+		for (j = top->low + 1; j <= PHOENIX_VALUE - top->length; j++)
+			add_straights(trickset, j, top->length, &trickhelper);
+	else {
+		for (i = MIN_STRAIGHT_LENGTH; i <= MAX_STRAIGHT_LENGTH; i++) 
+			for (j = ONE_VALUE; j <= PHOENIX_VALUE - i; j++)
+				add_straights(trickset, j, i, &trickhelper);
+	}
+		
 	return;
 }
 
 void add_straights(TrickSet *trickset, int low, int length,
 	TrickHelper *trickhelper)
 {
-	int i, sum, has_phoenix, pos;
+	int i, sum, has_phoenix, val;
 
-	sum = sum_straight(low, length, trickhelper, &pos);
+	val = -1;
+	sum = sum_straight(low, length, trickhelper, &val);
 	has_phoenix = trickhelper->counts[PHOENIX_VALUE];
 	
 	if (sum == length - 1 && has_phoenix)
-		add_straights_ph(trickset, low, length, pos, trickhelper);
+		add_straights_ph(trickset, low, length, val, trickhelper);
 	else if (sum == length && has_phoenix) {
 		add_straights_r(trickset, low, length, trickhelper);
 		for (i = 0; i < length; i++)
-			add_straights_ph(trickset, low, length, pos, trickhelper);
+			add_straights_ph(trickset, low, length, low + i, trickhelper);
 	} else if (sum == length && !has_phoenix)
 		add_straights_r(trickset, low, length, trickhelper);
 
 	return;
 }
 
-int sum_straight(int low, int length, TrickHelper *trickhelper, int *pos)
+void add_straights_ph(TrickSet *trickset, int low, int length, int val,
+	TrickHelper *trickhelper)
+{
+	int i, sum, counters[MAX_STRAIGHT_LENGTH], limits[MAX_STRAIGHT_LENGTH];
+	Card cards[MAX_STRAIGHT_LENGTH];
+	Trick trick;
+
+	if (val == ONE_VALUE)
+		return;
+
+	for (i = 0; i < length; i++) {
+		counters[i] = 0;
+		limits[i] = trickhelper->counts[i + low];
+	}
+	limits[val - low] = 1; // phoenix position
+
+	do {
+		for (i = 0; i < length; i++)
+			cards[i] = trickhelper->cards[i + low][counters[i]];
+		cards[val - low] = PHOENIX;
+
+		set_trick(&trick,
+			STRAIGHT, length, length, low + length - 1, low, 1, cards);
+		add_trick(trickset, &trick);
+		inc_counters(counters, length, limits);
+		sum = 0;
+		for (i = 0; i < length; i++)
+			sum += counters[i];
+	} while (sum);
+
+	return;
+}
+
+void add_straights_r(TrickSet *trickset, int low, int length,
+	TrickHelper *trickhelper)
+{
+
+	int i, sum, counters[MAX_STRAIGHT_LENGTH];
+	Card cards[MAX_STRAIGHT_LENGTH];
+	Trick trick;
+
+	for (i = 0; i < length; i++)
+		counters[i] = 0;
+
+	/* Get the cards in the current straight. Add the straight to the trickset
+	 * and then increment the counters. Stop when the counters are all zero
+	 * again.
+	 */
+	do {
+		for (i = 0; i < length; i++)
+			cards[i] = trickhelper->cards[i + low][counters[i]];
+		set_trick(&trick,
+			STRAIGHT, length, length, low + length - 1, low, 0, cards);
+		add_trick(trickset, &trick);
+		inc_counters(counters, length, &trickhelper->counts[low]);
+		sum = 0;
+		for (i = 0; i < length; i++)
+			sum += counters[i];
+	} while (sum);
+
+	return;
+}
+
+int sum_straight(int low, int length, TrickHelper *trickhelper, int *val)
 {
 	int i, sum;
 
@@ -182,20 +283,27 @@ int sum_straight(int low, int length, TrickHelper *trickhelper, int *pos)
 		if (trickhelper->counts[i + low])
 			sum++;
 		else
-			*pos = i;
+			*val = i + low;
 
 	return sum;
 }
 
+void inc_counters(int *counters, int length, int *limits)
+{
+	int i, carry;
 
+	(*(counters + length - 1))++;
 
+	carry = 0;
+	for (i = length - 1; i >=  0; i--) {
+		*(counters + i) += carry;
+		if (*(counters + i) == *(limits + i)) {
+			*(counters + i) = 0;
+			carry = 1;
+		} else
+			carry = 0;
+	}
 
-
-
-
-
-
-
-
-
+	return;
+}
 

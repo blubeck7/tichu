@@ -36,13 +36,4 @@ int has_one(Card cards[], int n);
 int has_phoenix(Card cards[], int n);
 int has_dragon(Card cards[], int n);
 
-
-
-
-//void make_doubles(Card cards[], int n, Card doubles[], int d);
-/* Takes a set of cards of size n and makes all combinations of 2 elements */
-
-//int count_value(CardSet *cardset, int value);
-//int get_num_cards(CardSet *cardset);
-
 #endif // CARD_H

@@ -10,53 +10,39 @@ TrickSet trickset;
 
 int main(int argc, char *argv[])
 {
-	Card cards[14], card;
+	Card cards[MAX_TRICK];
 	int n;
 	Trick trick;
-	//TrickHelper trickhelper;
 
 	n = 14;
-	card = 101;
-	rand_hand(cards, n);
+	//rand_hand(cards, n);
+	cards[0] = 30;
+	cards[1] = 33;
+	cards[2] = 43;
+	cards[3] = 73;
+	cards[4] = 81;
+	cards[5] = 93;
+	cards[6] = 101;
+	cards[7] = 112;
+	cards[8] = 113;
+	cards[9] = 120;
+	cards[10] = 123;
+	cards[11] = 132;
+	cards[12] = 140;
+	cards[13] = PHOENIX;
 	sort_cards(cards, n);
 	print_cards(cards, n);
 	init_trickset(&trickset);
-	set_trick(&trick, SINGLE, 1, 1, 10, 10, 0, &card);
-	make_singles(&trickset, &trick, cards, n);
-	print_trickset(&trickset);
+	set_trick(&trick, STRAIGHT, 5, 5, 11, 7, 0, cards);
+	//get_value(card), get_value(card), 0, &card);
 	//make_singles(&trickset, &trick, cards, n);
 	//print_trickset(&trickset);
-	//make_straights(&trickset);
-	
-	//init_trickhelper(&trickhelper);
-	//set_trickhelper(&trickhelper, cards, n);
-	//print_trickhelper(&trickhelper);
+	//make_singles(&trickset, &trick, cards, n);
+	//print_trickset(&trickset);
+	make_straights(&trickset, &trick, cards, n);
+	print_trickset(&trickset);
 
 
-
-
-	/*
-	sort_cardset();
-	print_cardset(&cardset);
-	printf("Has dog %d\n", has_dog(&cardset));
-	printf("Has one %d\n", has_one(&cardset));
-	printf("Has phoenix %d\n", has_phoenix(&cardset));
-	printf("Has dragon %d\n", has_dragon(&cardset));
-	printf("Has 8c %d\n", has_card(&cardset, 80));
-	remove_card(&cardset, PHOENIX);
-	remove_card(&cardset, DRAGON);
-	remove_card(&cardset, 80);
-	remove_card(&cardset, 81);
-	print_cardset(&cardset);
-	printf("Has dog %d\n", has_dog(&cardset));
-	printf("Has one %d\n", has_one(&cardset));
-	printf("Has phoenix %d\n", has_phoenix(&cardset));
-	printf("Has dragon %d\n", has_dragon(&cardset));
-	printf("Has 8c %d\n", has_card(&cardset, 80));
-	printf("Count 5's %d\n", count_value(&cardset, 5));
-	printf("Count 10's %d\n", count_value(&cardset, 10));
-	printf("Count K's %d\n", count_value(&cardset, 13));
-*/
 	return 0;
 }
 

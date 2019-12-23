@@ -61,3 +61,6 @@ tf/
 
 #VSCode
 *.vscode
+
+#bin
+bin/
