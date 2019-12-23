@@ -11,14 +11,17 @@ int main(int argc, char *argv[])
 	Card cards[14];
 	int n;
 	TrickSet trickset;
+	//Trick trick;
 	//TrickHelper trickhelper;
 
 	n = 14;
 	rand_hand(cards);
 	sort_cards(cards, n);
 	print_cards(cards, n);
-	make_singles(&trickset, cards, n);
-	print_trickset(&trickset);
+	make_straights(&trickset)
+	//set_trick(&trick, SINGLE, 1, 1, 16, 16, 0, cards);
+	//make_singles(&trickset, &trick, cards, n);
+	//print_trickset(&trickset);
 	
 	//init_trickhelper(&trickhelper);
 	//set_trickhelper(&trickhelper, cards, n);

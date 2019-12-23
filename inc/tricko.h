@@ -11,6 +11,9 @@
 #define STRAIGHT 5
 #define DSTRAIGHT 6
 #define BOMB 7
+
+#define MIN_STRAIGHT_LENGTH 5
+#define MAX_STRAIGHT_LENGTH 14
 #define MAX_TRICK 14
 #define MAX_TRICKS 500
 
@@ -41,17 +44,23 @@ void print_trickhelper(TrickHelper *trickhelper);
 void set_trickhelper(TrickHelper *trickhelper, Card cards[], int n);
 
 void init_trick(Trick *trick);
+void print_trick(Trick *trick);
 void set_trick(Trick *trick, int type, int length, int num_cards, int high,
 	int low, int has_phoenix, Card *cards);
-void print_trick(Trick *trick);
 
+void init_trickset(TrickSet *trickset);
 void print_trickset(TrickSet *trickset);
-void make_singles(TrickSet *trickset, Card cards[], int n);
+void make_singles(TrickSet *trickset, Trick *top, Card cards[], int n);
 void add_single(TrickSet *trickset, Card card);
+void make_straights(TrickSet *trickset, Trick *top, Card cards[], int n);
+void add_straights(TrickSet *trickset, int low, int length,
+	TrickHelper *trickhelper);
+int calc_num_straights(int counts[], int n);
+/* adds all straights of a specific length starting at low */
 /*
 int is_valid_trick(Trick *trick, Trick *top);
 
-void init_trickset(TrickSet *trickset);
+
 
 */
 
