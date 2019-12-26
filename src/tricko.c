@@ -15,8 +15,19 @@ void init_trickhelper(TrickHelper *trickhelper)
 	trickhelper->high = 0;
 	for (i = 0; i < NUM_VALUES; i++) {
 		trickhelper->counts[i] = 0; 
+		trickhelper->counts_d[i] = 0; 
+		trickhelper->counts_t[i] = 0; 
 		for (j = 0; j < NUM_SUITS; j++)
 			trickhelper->cards[i][j] = BLANK;
+		for (j = 0; j < MAX_DOUBLES; j++) {
+			trickhelper->doubles[i][j][0] = BLANK;
+			trickhelper->doubles[i][j][1] = BLANK;
+		}
+		for (j = 0; j < MAX_TRIPLES; j++) {
+			trickhelper->triples[i][j][0] = BLANK;
+			trickhelper->triples[i][j][1] = BLANK;
+			trickhelper->triples[i][j][2] = BLANK;
+		}
 	}
 }
 
@@ -43,7 +54,7 @@ void print_trickhelper(TrickHelper *trickhelper)
 
 void set_trickhelper(TrickHelper *trickhelper, Card cards[], int n)
 {
-	int i, value, pos;
+	int i, value, pos, has_phoenix, count;
 
 	sort_cards(cards, n);
 
@@ -54,6 +65,87 @@ void set_trickhelper(TrickHelper *trickhelper, Card cards[], int n)
 		pos = trickhelper->counts[value]++;
 		trickhelper->cards[value][pos] = cards[i];
 	}
+
+	// doubles
+	has_phoenix = trickhelper->counts[PHOENIX_VALUE];	
+	for (i = ONE_VALUE + 1; i < PHOENIX_VALUE; i++) {
+		count = trickhelper->counts[i];
+		if (count >= 2)
+			set_doubles_r(trickhelper, i, count);
+		if (has_phoenix && count)
+			set_doubles_ph(trickhelper, i, count);
+	}
+
+	// triples
+	has_phoenix = trickhelper->counts[PHOENIX_VALUE];	
+	for (i = ONE_VALUE + 1; i < PHOENIX_VALUE; i++) {
+		count = trickhelper->counts[i];
+		if (count >= 3)
+			set_triples_r(trickhelper, i, count);
+		if (has_phoenix && count >= 2)
+			set_triples_ph(trickhelper, i, count);
+	}
+}
+
+void set_doubles_ph(TrickHelper *trickhelper, int value, int count)
+{
+	int i, n;
+
+	for (i = 0; i < count; i++) {
+		n = trickhelper->counts_d[value]++;
+		trickhelper->doubles[value][n][0] = trickhelper->cards[value][i];
+		trickhelper->doubles[value][n][1] = PHOENIX;
+	}
+
+	return;
+}
+
+void set_doubles_r(TrickHelper *trickhelper, int value, int count)
+{
+	int i, j, n;
+
+	for (i = 0; i < count; i++)
+		for (j = i + 1; j < count; j++) {
+			n = trickhelper->counts_d[value]++;
+			trickhelper->doubles[value][n][0] = trickhelper->cards[value][i];
+			trickhelper->doubles[value][n][1] = trickhelper->cards[value][j];
+		}
+
+	return;
+}
+
+void set_triples_ph(TrickHelper *trickhelper, int value, int count)
+{
+	int i, j, n;
+
+	for (i = 0; i < count; i++)
+		for (j = i + 1; j < count; j++) {
+			n = trickhelper->counts_t[value]++;
+			trickhelper->triples[value][n][0] = trickhelper->cards[value][i];
+			trickhelper->triples[value][n][1] = trickhelper->cards[value][j];
+			trickhelper->triples[value][n][2] = PHOENIX;
+		}
+
+	return;
+}
+
+void set_triples_r(TrickHelper *trickhelper, int value, int count)
+{
+	int i, j, k, n;
+
+	for (i = 0; i < count; i++)
+		for (j = i + 1; j < count; j++)
+			for (k = j + 1; k < count; k++) {
+				n = trickhelper->counts_t[value]++;
+				trickhelper->triples[value][n][0] =
+					trickhelper->cards[value][i];
+				trickhelper->triples[value][n][1] =
+					trickhelper->cards[value][j];
+				trickhelper->triples[value][n][2] =
+					trickhelper->cards[value][k];
+		}
+
+	return;
 }
 
 void init_trick(Trick *trick)
@@ -125,9 +217,9 @@ void print_trickset(TrickSet *trickset)
 {
 	int i;
 
-	printf("Trick Set\n");
-	printf("%d tricks\n", trickset->num_tricks);
+	printf("Trick Set: %d tricks\n", trickset->num_tricks);
 	for (i = 0; i < trickset->num_tricks; i++) {
+		printf("%d: ", i + 1);
 		print_trick(&trickset->tricks[i]);
 		printf("\n");
 	}
@@ -165,6 +257,107 @@ void add_single(TrickSet *trickset, Card card)
 
 	value = get_value(card);
 	set_trick(&trick, SINGLE, 1, 1, value, value, is_phoenix(card), &card);
+	add_trick(trickset, &trick);
+
+	return;
+}
+
+void make_doubles(TrickSet *trickset, Trick *top, Card cards[], int n)
+{
+	int i, j;
+	TrickHelper trickhelper;
+
+	init_trickhelper(&trickhelper);
+	set_trickhelper(&trickhelper, cards, n);
+
+	if (top) {
+		for (i = top->high + 1; i < PHOENIX_VALUE; i++)	 
+			for (j = 0; j < trickhelper.counts_d[i]; j++)	 
+				add_double(trickset, trickhelper.doubles[i][j]);
+	} else
+		for (i = ONE_VALUE + 1; i < PHOENIX_VALUE; i++)	 
+			for (j = 0; j < trickhelper.counts_d[i]; j++)	 
+				add_double(trickset, trickhelper.doubles[i][j]);
+
+	return;
+}
+
+void add_double(TrickSet *trickset, Card cards[])
+{
+	int value, i;
+	Trick trick;
+
+	i = 0;
+	if (is_phoenix(cards[0]) || is_phoenix(cards[1]))
+		i = 1;
+	value = get_value(cards[0]);
+	set_trick(&trick, DOUBLE, 1, 2, value, value, i, cards);
+	add_trick(trickset, &trick);
+
+	return;
+}
+
+void make_triples(TrickSet *trickset, Trick *top, Card cards[], int n)
+{
+	int i, j;
+	TrickHelper trickhelper;
+
+	init_trickhelper(&trickhelper);
+	set_trickhelper(&trickhelper, cards, n);
+
+	if (top) {
+		for (i = top->high + 1; i < PHOENIX_VALUE; i++)	 
+			for (j = 0; j < trickhelper.counts_t[i]; j++)	 
+				add_triple(trickset, trickhelper.triples[i][j]);
+	} else
+		for (i = ONE_VALUE + 1; i < PHOENIX_VALUE; i++)	 
+			for (j = 0; j < trickhelper.counts_t[i]; j++)	 
+				add_triple(trickset, trickhelper.triples[i][j]);
+
+	return;
+}
+
+void add_triple(TrickSet *trickset, Card cards[])
+{
+	int value, i;
+	Trick trick;
+
+	i = 0;
+	if (is_phoenix(cards[0]) || is_phoenix(cards[1]) || is_phoenix(cards[2]))
+		i = 1;
+	value = get_value(cards[0]);
+	set_trick(&trick, TRIPLE, 1, 3, value, value, i, cards);
+	add_trick(trickset, &trick);
+
+	return;
+}
+
+void make_quads(TrickSet *trickset, Trick *top, Card cards[], int n)
+{
+	int i, j, start;
+	TrickHelper trickhelper;
+
+	init_trickhelper(&trickhelper);
+	set_trickhelper(&trickhelper, cards, n);
+
+	start = 0;
+	if (top)
+		start = top->high + 1;
+
+	for (i = start; i < PHOENIX_VALUE; i++)	 
+		if (trickhelper.counts[i] == 4)
+			add_quad(trickset, trickhelper.cards[i]);
+
+	return;
+}
+
+void add_quad(TrickSet *trickset, Card cards[])
+{
+	int value;
+	Trick trick;
+
+	value = get_value(cards[0]);
+	set_trick(&trick, BOMB, 1, 4, value, value, 0, cards);
 	add_trick(trickset, &trick);
 
 	return;

@@ -15,31 +15,36 @@ int main(int argc, char *argv[])
 	Trick trick;
 
 	n = 14;
-	//rand_hand(cards, n);
-	cards[0] = 30;
-	cards[1] = 33;
-	cards[2] = 43;
-	cards[3] = 73;
-	cards[4] = 81;
-	cards[5] = 93;
-	cards[6] = 101;
-	cards[7] = 112;
-	cards[8] = 113;
-	cards[9] = 120;
+	rand_hand(cards, n);
+	/*
+	cards[0] = ONE;
+	cards[1] = 20;
+	cards[2] = 31;
+	cards[3] = 40;
+	cards[4] = 41;
+	cards[5] = 102;
+	cards[6] = 130;
+	cards[7] = 141;
+	cards[8] = 142;
+	cards[9] = PHOENIX;
 	cards[10] = 123;
 	cards[11] = 132;
 	cards[12] = 140;
 	cards[13] = PHOENIX;
+	*/
 	sort_cards(cards, n);
 	print_cards(cards, n);
-	init_trickset(&trickset);
-	set_trick(&trick, STRAIGHT, 5, 5, 11, 7, 0, cards);
+	//init_trickset(&trickset);
+	//set_trick(&trick, STRAIGHT, 5, 5, 11, 7, 0, cards);
 	//get_value(card), get_value(card), 0, &card);
-	//make_singles(&trickset, &trick, cards, n);
+	make_singles(&trickset, NULL, cards, n);
+	make_doubles(&trickset, NULL, cards, n);
+	make_triples(&trickset, NULL, cards, n);
+	make_quads(&trickset, NULL, cards, n);
 	//print_trickset(&trickset);
 	//make_singles(&trickset, &trick, cards, n);
 	//print_trickset(&trickset);
-	make_straights(&trickset, &trick, cards, n);
+	//make_straights(&trickset, &trick, cards, n);
 	print_trickset(&trickset);
 
 
