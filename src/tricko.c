@@ -334,7 +334,7 @@ void add_triple(TrickSet *trickset, Card cards[])
 
 void make_quads(TrickSet *trickset, Trick *top, Card cards[], int n)
 {
-	int i, j, start;
+	int i, start;
 	TrickHelper trickhelper;
 
 	init_trickhelper(&trickhelper);
@@ -441,7 +441,7 @@ void add_straights_r(TrickSet *trickset, int low, int length,
 	TrickHelper *trickhelper)
 {
 
-	int i, sum, counters[MAX_STRAIGHT_LENGTH];
+	int i, sum, flush, type, counters[MAX_STRAIGHT_LENGTH];
 	Card cards[MAX_STRAIGHT_LENGTH];
 	Trick trick;
 
@@ -455,8 +455,18 @@ void add_straights_r(TrickSet *trickset, int low, int length,
 	do {
 		for (i = 0; i < length; i++)
 			cards[i] = trickhelper->cards[i + low][counters[i]];
+
+		flush = 1;
+		for (i = 1; i < length; i++)
+			if (get_suit(cards[0]) == get_suit(cards[i]))
+				flush++;
+
+		type = STRAIGHT;
+		if (flush == length)
+			type = BOMB;
+
 		set_trick(&trick,
-			STRAIGHT, length, length, low + length - 1, low, 0, cards);
+			type, length, length, low + length - 1, low, 0, cards);
 		add_trick(trickset, &trick);
 		inc_counters(counters, length, &trickhelper->counts[low]);
 		sum = 0;
@@ -500,3 +510,129 @@ void inc_counters(int *counters, int length, int *limits)
 	return;
 }
 
+void make_dstraights(TrickSet *trickset, Trick *top, Card cards[], int n)
+{
+	int i, j;
+	TrickHelper trickhelper;
+
+	init_trickhelper(&trickhelper);
+	set_trickhelper(&trickhelper, cards, n);
+	
+	if (top) 
+		for (j = top->low + 1; j <= PHOENIX_VALUE - top->length; j++)
+			add_dstraights(trickset, j, top->length, &trickhelper);
+	else {
+		for (i = MIN_DSTRAIGHT_LENGTH; i <= MAX_DSTRAIGHT_LENGTH; i++) 
+			for (j = ONE_VALUE + 1; j <= PHOENIX_VALUE - i; j++)
+				add_dstraights(trickset, j, i, &trickhelper);
+	}
+		
+	return;
+}
+
+void add_dstraights(TrickSet *trickset, int low, int length,
+	TrickHelper *trickhelper)
+{
+	int i, j, sum, has_phoenix, counters[MAX_DSTRAIGHT_LENGTH];
+	Card cards[MAX_DSTRAIGHT_CARDS];
+	Trick trick;
+
+	sum = sum_dstraight(low, length, trickhelper);
+	has_phoenix = trickhelper->counts[PHOENIX_VALUE];
+	
+	if ((sum == 2 * length) || (sum == 2 * length - 1 && has_phoenix)) {
+		for (i = 0; i < length; i++)
+			counters[i] = 0;
+		do {
+			j = 0;
+			for (i = 0; i < length; i++) {
+				cards[i * 2] =
+					trickhelper->doubles[i + low][counters[i]][0];
+				cards[i * 2 + 1] =
+					trickhelper->doubles[i + low][counters[i]][1];
+
+				if (is_phoenix(cards[i * 2]) ||
+					is_phoenix(cards[i * 2 + 1]))
+						j++;
+			}
+
+			if (j < 2) {
+				set_trick(&trick, DSTRAIGHT, length, 2 * length,
+					low + length - 1, low, j, cards);
+				add_trick(trickset, &trick);
+			}
+			inc_counters(counters, length, &trickhelper->counts_d[low]);
+			sum = 0;
+			for (i = 0; i < length; i++)
+				sum += counters[i];
+		} while (sum);
+	}
+
+	return;
+}
+
+int sum_dstraight(int low, int length, TrickHelper *trickhelper)
+{
+	int i, sum;
+
+	sum = 0;
+	for (i = 0; i < length; i++) {
+		if (trickhelper->counts[i + low] > 1)
+			sum += 2;
+		else if (trickhelper->counts[i + low] == 1)
+			sum++;
+	}
+
+	return sum;
+}
+
+void make_fulls(TrickSet *trickset, Trick *top, Card cards[], int n)
+{
+	int i, j, trip;
+	TrickHelper trickhelper;
+
+	init_trickhelper(&trickhelper);
+	set_trickhelper(&trickhelper, cards, n);
+	
+	trip = ONE_VALUE + 1;
+	if (top) 
+		trip = top->high + 1;
+
+	for (i = trip; i < PHOENIX_VALUE; i++)
+		for (j = ONE_VALUE + 1; j < PHOENIX_VALUE; j++) {
+			if (trickhelper.counts_t[i] && trickhelper.counts_d[j] && i != j) {
+				add_fulls(trickset, i, j, &trickhelper);
+			}	
+		}
+	return;
+}
+
+void add_fulls(TrickSet *trickset, int trip, int doub,
+	TrickHelper *trickhelper)
+{
+	int i, j, k, sum;
+	Card cards[5];
+	Trick trick;
+
+	for (i = 0; i < trickhelper->counts_t[trip]; i++) {
+		cards[0] = trickhelper->triples[trip][i][0];
+		cards[1] = trickhelper->triples[trip][i][1];
+		cards[2] = trickhelper->triples[trip][i][2];
+		for (j = 0; j < trickhelper->counts_d[doub]; j++) {
+			cards[3] = trickhelper->doubles[doub][j][0];
+			cards[4] = trickhelper->doubles[doub][j][1];
+		
+			sum = 0;
+			for (k = 0; k < 5; k++)
+				if (is_phoenix(cards[k]))
+					sum++;
+
+			if (sum < 2) {
+				set_trick(&trick, FULL, 5, 5, trip, doub, sum, cards);
+				add_trick(trickset, &trick);
+			}
+		}
+	}
+
+	return;
+}

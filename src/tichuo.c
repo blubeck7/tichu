@@ -12,39 +12,39 @@ int main(int argc, char *argv[])
 {
 	Card cards[MAX_TRICK];
 	int n;
-	Trick trick;
+	//Trick trick;
 
 	n = 14;
 	rand_hand(cards, n);
 	/*
-	cards[0] = ONE;
-	cards[1] = 20;
-	cards[2] = 31;
-	cards[3] = 40;
-	cards[4] = 41;
-	cards[5] = 102;
-	cards[6] = 130;
-	cards[7] = 141;
-	cards[8] = 142;
-	cards[9] = PHOENIX;
-	cards[10] = 123;
-	cards[11] = 132;
-	cards[12] = 140;
+	cards[0] = 30;
+	cards[1] = 40;
+	cards[2] = 50;
+	cards[3] = 60;
+	cards[4] = 70;
+	cards[5] = 71;
+	cards[6] = 72;
+	cards[7] = 73;
+	cards[8] = 80;
+	cards[9] = 81;
+	cards[10] = 82;
+	cards[11] = 83;
+	cards[12] = 90;
 	cards[13] = PHOENIX;
 	*/
 	sort_cards(cards, n);
 	print_cards(cards, n);
-	//init_trickset(&trickset);
-	//set_trick(&trick, STRAIGHT, 5, 5, 11, 7, 0, cards);
+	init_trickset(&trickset);
+	//set_trick(&trick, TRIPLE, 1, 4, 8, 8, 1, cards);
 	//get_value(card), get_value(card), 0, &card);
+	//make_singles(&trickset, &trick, cards, n);
 	make_singles(&trickset, NULL, cards, n);
 	make_doubles(&trickset, NULL, cards, n);
 	make_triples(&trickset, NULL, cards, n);
 	make_quads(&trickset, NULL, cards, n);
-	//print_trickset(&trickset);
-	//make_singles(&trickset, &trick, cards, n);
-	//print_trickset(&trickset);
-	//make_straights(&trickset, &trick, cards, n);
+	make_straights(&trickset, NULL, cards, n);
+	make_dstraights(&trickset, NULL, cards, n);
+	make_fulls(&trickset, NULL, cards, n);
 	print_trickset(&trickset);
 
 

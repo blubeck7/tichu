@@ -16,8 +16,11 @@
 #define MAX_TRIPLES 10
 #define MIN_STRAIGHT_LENGTH 5
 #define MAX_STRAIGHT_LENGTH 14
+#define MIN_DSTRAIGHT_LENGTH 2
+#define MAX_DSTRAIGHT_LENGTH 7
+#define MAX_DSTRAIGHT_CARDS 28
 #define MAX_TRICK 14
-#define MAX_TRICKS 650
+#define MAX_TRICKS 1100
 
 typedef struct trickhelper {
 	int num_cards;
@@ -85,5 +88,14 @@ void add_straights_r(TrickSet *trickset, int low, int length,
 	TrickHelper *trickhelper);
 int sum_straight(int low, int length, TrickHelper *trickhelper, int *val);
 void inc_counters(int *counters, int length, int *limits);
+
+void make_dstraights(TrickSet *trickset, Trick *top, Card cards[], int n);
+void add_dstraights(TrickSet *trickset, int low, int length,
+	TrickHelper *trickhelper);
+int sum_dstraight(int low, int length, TrickHelper *trickhelper);
+
+void make_fulls(TrickSet *trickset, Trick *top, Card cards[], int n);
+void add_fulls(TrickSet *trickset, int trip, int doub,
+	TrickHelper *trickhelper);
 
 #endif // TRICK_H
