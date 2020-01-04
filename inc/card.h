@@ -1,41 +1,23 @@
 #ifndef CARD_H
 #define CARD_H
 
-#define NUM_CARDS 56
-#define NUM_VALUES 17
-#define NUM_RVALUES 13
-#define NUM_SUITS 5 
-#define NUM_RSUITS 4
+#include "types.h"
+ 
+int get_value(Card card);
+int get_suit(Card card);
+void print_card(Card card);
+int is_phoenix(Card card);
+int is_special(Card card);
 
-#define DOG 0
-#define ONE 10
-#define PHOENIX 150
-#define DRAGON 160
-
-#define get_value(card) (card / 10)
-#define get_suit(card) (card % 10)
-
-typedef int Card;
-typedef struct card_count_t Card_Count;
-
-struct card_count_t {
-	int num_cards;
-	int one_flags[NUM_VALUES];
-	int two_flags[NUM_VALUES];
-	int counts_s[NUM_VALUES];
-	Card singles[NUM_VALUES][4];
-	int counts_d[NUM_VALUES];
-	Card doubles[NUM_VALUES][10][2];
-	int counts_t[NUM_VALUES];
-	Card triples[NUM_VALUES][10][3];
-};
-
-extern Card CARDS[NUM_CARDS];
-
-int print_card(Card card);
-int init_card_count(Card_Count *card_count);
-int count_cards(Card cards[], int num_cards, Card_Count *card_count);
-int print_card_count(Card_Count *card_count);
-int sort_cards(Card cards[], int num_cards);
+void print_cards(Card cards[], int n);
+void sort_cards(Card cards[], int n);
+void add_card(Card cards[], int *n, Card card);
+void remove_card(Card cards[], int *n, Card card);
+void shuffle_cards(Card cards[], int n);
+int has_card(Card cards[], int n, Card card);
+int has_dog(Card cards[], int n);
+int has_one(Card cards[], int n);
+int has_phoenix(Card cards[], int n);
+int has_dragon(Card cards[], int n);
 
 #endif // CARD_H

@@ -45,17 +45,24 @@
 #obj/hand.o: src/hand.c inc/card.h inc/hand.h
 	#gcc -Wall -std=c99 -c -O3 -o obj/hand.o src/hand.c
 
-tichuo: obj/tichuo.o obj/cardo.o obj/tricko.o
-	gcc -Wall -std=c99 -O3 -o bin/tichuo obj/tichuo.o obj/cardo.o obj/tricko.o
+tichuo: obj/tichuo.o obj/cardo.o obj/tricko.o obj/gameo.o
+	gcc -Wall -std=c99 -O3 -o bin/tichuo obj/tichuo.o obj/cardo.o obj/tricko.o \
+	obj/gameo.o
 
 obj/tichuo.o: src/tichuo.c inc/cardo.h inc/tricko.h
 	gcc -Wall -std=c99 -c -O3 -o obj/tichuo.o src/tichuo.c
 
-obj/cardo.o: src/cardo.c inc/cardo.h
-	gcc -Wall -std=c99 -c -O3 -o obj/cardo.o src/cardo.c
+obj/card.o: src/card.c inc/card.h inc/types.h
+	gcc -Wall -std=c99 -c -O3 -o obj/card.o src/card.c
 
-obj/tricko.o: src/tricko.c inc/cardo.h inc/tricko.h
-	gcc -Wall -std=c99 -c -O3 -o obj/tricko.o src/tricko.c
+obj/trick.o: src/trick.c inc/card.h inc/trick.h inc/types.h
+	gcc -Wall -std=c99 -c -O3 -o obj/trick.o src/trick.c
+
+obj/player.o: src/player.c inc/card.h inc/trick.h inc/types.h inc/player.h
+	gcc -Wall -std=c99 -c -O3 -o obj/player.o src/player.c
+
+obj/gameo.o: src/gameo.c inc/cardo.h inc/tricko.h inc/gameo.h
+	gcc -Wall -std=c99 -c -O3 -o obj/gameo.o src/gameo.c
 
 #test_deck.o: test/test_deck.c
 	#gcc -c test/test_deck.c -o obj/test_deck.o
